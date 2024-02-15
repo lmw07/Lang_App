@@ -1,8 +1,9 @@
 
 
 
-
-
+'''
+Generates an mp3 of a Norwegian sentence with 1 of 4 randomly chosen voices.
+'''
 def __synthesize_sound_with_google__(text, id : int):
     """Synthesizes speech from the input string of text."""
     from google.cloud import texttospeech
@@ -49,11 +50,18 @@ def __check_for_sound__(id : int) -> bool:
     return False
 
 
-#TODO finish
-def get_sound(id : int):
+
+'''
+Checks for presence of sound file in speechfiles folder. If not found,
+creates one.
+Returns True if file created, False otherwise.
+'''
+def get_sound(id : int, sentenceText :str) -> bool:
     if __check_for_sound__(id):
-        return
-    else: __synthesize_sound_with_google__()
+        return False
+    else: 
+        __synthesize_sound_with_google__(sentenceText, id)
+        return True
 
 
 
