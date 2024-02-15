@@ -116,9 +116,12 @@ class MainWindow(QMainWindow):
 
     def playSound(self):
         # Replace 'your_sound_file.mp3' with the path to your sound file
-        soundFile = 'testMP3.mp3'
-        self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
-        self.player.play()
+        soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
+        try:
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
+            self.player.play()
+        except:
+            pass
 
 
 
@@ -128,22 +131,6 @@ class MainWindow(QMainWindow):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
 
     def initLabels(self):
         # Clear existing widgets from the sentence layout
