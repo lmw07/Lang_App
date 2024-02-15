@@ -29,8 +29,8 @@ def add_sentences_from_file(filename : str):
         #add the norwegian and english sentence into the sentences table
         norskSentence = sentencesList[i][0]
         engSentence = sentencesList[i][1]
-        sentenceQuery = '''INSERT INTO sentences (norsk, english, old) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sentences WHERE norsk = ?);'''
-        cursor.execute(sentenceQuery,(norskSentence, engSentence, 0, norskSentence))
+        sentenceQuery = '''INSERT INTO sentences (norsk, english, old, soundfile) SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sentences WHERE norsk = ?);'''
+        cursor.execute(sentenceQuery,(norskSentence, engSentence, 0, "None", norskSentence))
         conn.commit()
         #if sentences added to sentences table
         if cursor.rowcount == 1:
@@ -83,7 +83,7 @@ def createTables():
 
     # Create table
     cursor.execute('''CREATE TABLE IF NOT EXISTS sentences
-                    (sentence_id INTEGER PRIMARY KEY, norsk TEXT, english TEXT, old INTEGER)''')
+                    (sentence_id INTEGER PRIMARY KEY, norsk TEXT, english TEXT, old INTEGER, soundfile TEXT)''')
     
     cursor.execute('''CREATE TABLE IF NOT EXISTS words (word_id INTEGER PRIMARY KEY, sentence_id INTEGER, norsk TEXT, english TEXT, FOREIGN KEY (sentence_id) REFERENCES sentences (sentence_id))''')
     
@@ -182,6 +182,29 @@ def updateSentenceClass(sentence_id : int, learned : bool):
     cursor.close()
     conn.close()
 
+
+
+'''
+Returns a tuple where the first element is the norwegian sentence and the second element is a filepath to a sound file
+'''
+def getSentenceSound(sentence_id : int) -> str:
+    conn = sqlite3.connect('sentences.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM sentences WHERE sentence_id = ?', (sentence_id,))
+    out = cursor.fetchall()
+    outTup = ((out[1], out[4]))
+    cursor.close()
+    conn.close()
+    return outTup
+    
+def updateSentenceSound(sentence_id : int, soundfile: str):
+    conn = sqlite3.connect('sentences.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE sentences SET soundfile = ? WHERE sentence_id = ?', (soundfile,sentence_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
 '''
 removes both tables completely
 '''
@@ -195,7 +218,7 @@ def __clearTables():
     conn.close()
 
 
-def get_all_sentence_ids():
+def getAllSentenceIds():
 
     conn = sqlite3.connect("sentences.db")
     cursor = conn.cursor()
@@ -229,7 +252,7 @@ def __test():
 
 
 
-
+print(getSentenceSound(11))
 #createTables()
 #add_sentences_from_file("sentences_to_add.txt")
 #__test()
