@@ -192,7 +192,7 @@ def getSentenceSound(sentence_id : int) -> str:
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM sentences WHERE sentence_id = ?', (sentence_id,))
     out = cursor.fetchall()
-    outTup = ((out[1], out[4]))
+    outTup = ((out[0][1], out[0][4]))
     cursor.close()
     conn.close()
     return outTup
@@ -252,7 +252,7 @@ def __test():
 
 
 
-print(getSentenceSound(11))
+#print(getSentenceSound(1))
 #createTables()
 #add_sentences_from_file("sentences_to_add.txt")
 #__test()
