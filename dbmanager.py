@@ -195,6 +195,29 @@ def __clearTables():
     conn.close()
 
 
+def get_all_sentence_ids():
+
+    conn = sqlite3.connect("sentences.db")
+    cursor = conn.cursor()
+    query = "SELECT sentence_id FROM sentences"
+    
+    try:
+        cursor.execute(query)
+
+        sentence_ids = cursor.fetchall()
+
+        sentence_ids = [id[0] for id in sentence_ids]
+        
+        return sentence_ids
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
 '''
 prints contents of tables for testing
 '''
@@ -203,6 +226,8 @@ def __test():
     cursor = conn.cursor()
     cursor.execute('''SELECT * FROM sentences''')
     print(cursor.fetchall())
+
+
 
 
 #createTables()
