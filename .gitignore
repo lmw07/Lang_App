@@ -1,0 +1,10 @@
+/.venv
+/main1.py
+/output.mp3
+/outputWAVENET.mp3
+/sentences.db
+/sentences_to_add.txt
+/speechfiles
+/testMP3.mp3
+/your_database.db
+/__pycache__
