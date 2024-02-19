@@ -152,6 +152,7 @@ class MainWindow(QMainWindow):
 
         # Add stretch after labels to keep them centered
         self.sentenceLayout.addStretch()
+        self.playSound()
 
 
     def initProgressButtons(self, layout):
@@ -183,7 +184,10 @@ class MainWindow(QMainWindow):
     def on_progress_button_clicked(self, knewIt):
         dbmanager.updateSentenceClass(self.currSentenceID, knewIt)
         if knewIt:
-            self.workingSet.remove(self.getATupleFromWorkingSet())
+            for tup in self.workingSet:
+                if self.currNorskSentence == tup[0]:
+                    tupeToRemove = tup
+            self.workingSet.remove(tupeToRemove)
             if not self.workingSet:
                 QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
                 self.on_change_set_button_clicked()
