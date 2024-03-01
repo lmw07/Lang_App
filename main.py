@@ -48,9 +48,9 @@ class MainWindow(QMainWindow):
         self.updateWorkingSet(self.fullWorkingSetSize)
         self.initUI()
         self.initMenuBar()
-        #TESTING
+        
         self.player = QMediaPlayer()
-        #ENDTESTING
+        
 
 
     def initMenuBar(self):
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow):
         changeSetButton.clicked.connect(self.on_change_set_button_clicked)
         layout.addWidget(changeSetButton, alignment=Qt.AlignCenter)
 
-        #TESTING
+        
 
         # Button to play sound
         playButton = QPushButton('Play Sound', self)
@@ -115,7 +115,6 @@ class MainWindow(QMainWindow):
 
 
     def playSound(self):
-        # Replace 'your_sound_file.mp3' with the path to your sound file
         soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
         try:
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
@@ -123,10 +122,6 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-
-
-
-#ENDTESTING
 
 
 

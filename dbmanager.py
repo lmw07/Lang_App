@@ -90,12 +90,10 @@ def createTables():
     #might add this later if I want to save state between sessions
     #cursor.execute('''CREATE TABLE IF NOT EXISTS workingset (id INTEGER PRIMARY KEY, set_json TEXT);''')
 
-    # Save (commit) the changes
+  
     conn.commit()
 
-    # Query the database
-    #cursor.execute('''SELECT * FROM words''')
-    #print(cursor.fetchall())
+
 
     # Close the cursor and connection
     cursor.close()
