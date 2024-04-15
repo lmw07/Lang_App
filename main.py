@@ -60,6 +60,8 @@ class MainWindow(QMainWindow):
         changeSetSizeAction = QAction("Change Set Size", self)
         changeSetSizeAction.triggered.connect(self.onChangeSetSizeClicked)
         setConfigMenu.addAction(changeSetSizeAction)
+
+ 
     def onChangeSetSizeClicked(self):
         newSize, ok = QInputDialog.getInt(self, "Change Set Size", "Enter the new set size:", value=self.fullWorkingSetSize, min=2)
         if ok:
@@ -114,13 +116,16 @@ class MainWindow(QMainWindow):
 
 
 
-    def playSound(self):
+    def playSound(self, speed = 1.0):
         soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
         try:
+            if not hasattr(self, 'player'):
+                self.player = QMediaPlayer()
             self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
+            self.player.setPlaybackRate(speed)
             self.player.play()
-        except:
-            pass
+        except Exception as e:
+            print("An error occurred:", e)
 
 
 

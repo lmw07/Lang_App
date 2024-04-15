@@ -270,7 +270,7 @@ prints contents of tables for testing
 def __test():
     conn = sqlite3.connect('sentences.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT * FROM words''')
+    cursor.execute('''SELECT * FROM sentences''')
     print(cursor.fetchall())
 
 
@@ -278,7 +278,7 @@ def __test():
 #print(getSentenceSound(1))
 #createTables()
 #add_sentences_from_file("sentences_to_add.txt")
-#__test()
+__test()
 #__clearTables()
 #print(getSentences(3))
 #print(getSizeOfSentenceTable())

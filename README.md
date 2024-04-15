@@ -13,7 +13,7 @@ should click on the red button, which replaces the sentence with a new one from 
 The "play sound" button plays an AI generated sound file of the norwegian sentence.
 
 ## Known Issues
-Some of the sentences do not appear correctly because ChatGPT is not capable of correctly mappiing English words to Norwegian words 100% of the time. To correct this, the sentence input needs to be reformatted and the application updated to accomodate the change.
+Some of the old sentences have English to Norwegian word mappings that are incorrect. These should be expunged.
 
 ## Planned improvements
 I would like to make a listening mode, where the user is first exposed only to the sound of the sentence. 
