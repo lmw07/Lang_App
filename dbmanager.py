@@ -27,7 +27,7 @@ def add_sentences_from_file(filename : str):
 
     with open(filename) as file:
         senStringsArr = file.readlines()
-        senStringsArr = [sentence.encode("latin-1").decode("utf-8") for sentence in senStringsArr]
+        senStringsArr = [sentence.encode("utf-8").decode("utf-8") for sentence in senStringsArr]
 
     conn = sqlite3.connect('sentences.db')
     cursor = conn.cursor()
@@ -242,16 +242,21 @@ def getAllSentenceIds():
 
 
 '''
-Delete all data associated with a particular norsk sentence
+Delete all data associated with a particular norsk sentence using its Norwegian sentence or its sentence id
 '''
-def deleteSentence(norskSentence :string):
+def deleteSentence(sentence_id : int = None, norskSentence :string = None):
+    if not sentence_id and not norskSentence:
+        raise Exception("Must provide either sentence id or Norwegian text")
     try:
         conn = sqlite3.connect('sentences.db')
         cursor = conn.cursor()
-        findSentenceIdCommand = "SELECT * FROM sentences WHERE norsk = ?"
-        cursor.execute(findSentenceIdCommand, (norskSentence,))
-        out = cursor.fetchall()
-        sentence_id = out[0][0]
+        if not sentence_id:
+            findSentenceIdCommand = "SELECT * FROM sentences WHERE norsk = ?"
+            cursor.execute(findSentenceIdCommand, (norskSentence,))
+            out = cursor.fetchall()
+            sentence_id = out[0][0]
+        else:
+            sentence_id = str(sentence_id)
         deleteWordsCommand = "DELETE FROM words WHERE sentence_id = ?"
         cursor.execute(deleteWordsCommand, (sentence_id,))
         deleteSentenceCommand = "DELETE FROM sentences WHERE sentence_id = ?"
@@ -262,6 +267,7 @@ def deleteSentence(norskSentence :string):
     finally:
         cursor.close()
         conn.close()
+
 
 
 '''
@@ -278,16 +284,14 @@ def __test():
 #print(getSentenceSound(1))
 #createTables()
 #add_sentences_from_file("sentences_to_add.txt")
-__test()
+#__test()
 #__clearTables()
 #print(getSentences(3))
 #print(getSizeOfSentenceTable())
 
 #s = Sentence('{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}')
 
-#deleteSentence("Jeg liker å lese bøker om vinteren")
-
-
+#deleteSentence(196)
 
 
 
