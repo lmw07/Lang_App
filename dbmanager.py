@@ -4,6 +4,32 @@ The database should have 2 tables: sentences and words
 '''
 import sqlite3
 import string
+import json
+
+
+class Sentence:
+    def __init__(self, inputString) -> None:
+        tmpdict = json.loads(inputString)
+        self.Norsk_sentence = tmpdict.get("Norwegian_sentence")
+        self.English_sentence = tmpdict.get("English_translation")
+        self.word_map = tmpdict.get("Word_mapping")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 '''
 adds sentences from a file. It expects each line of a file to conform to the following format:
 norwegian sentence [] english sentence [] norwegian word 1 [] english word 1 [] norwegian word 2 [] english word 2 [] ...
@@ -258,6 +284,7 @@ def __test():
 #print(getSentences(3))
 #print(getSizeOfSentenceTable())
 
+s = Sentence('{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}')
 
 
 
