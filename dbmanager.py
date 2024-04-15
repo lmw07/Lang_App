@@ -12,53 +12,37 @@ class Sentence:
         tmpdict = json.loads(inputString)
         self.Norsk_sentence = tmpdict.get("Norwegian_sentence")
         self.English_sentence = tmpdict.get("English_translation")
-        self.word_map = tmpdict.get("Word_mapping")
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self.word_map : dict = tmpdict.get("Word_mapping")
 
 
 
 
 '''
-adds sentences from a file. It expects each line of a file to conform to the following format:
-norwegian sentence [] english sentence [] norwegian word 1 [] english word 1 [] norwegian word 2 [] english word 2 [] ...
-'[]' was arbitrarily chosen as a separator because it is unlikely to appear in the body of a sentence
-If sentences are already in database, does not add them or their words
-Strips whitespace from beginning and end of words and removes ending punctuation
+adds sentences from a file. Each line of the file should be a JSON of a sentence object.
+Here is an example
+{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}
+
 '''
 def add_sentences_from_file(filename : str):
-    sentencesList = []
+
     with open(filename) as file:
         senStringsArr = file.readlines()
-    for sentence in senStringsArr:
-        sentence = sentence.encode("latin-1").decode("utf-8")
-        print(sentence)
-        sentence = sentence.replace('"', '')
-        sentence = sentence.replace('\n', '')
-        sentencesList.append(sentence.split("[]")) 
-    
+        senStringsArr = [sentence.encode("latin-1").decode("utf-8") for sentence in senStringsArr]
+
     conn = sqlite3.connect('sentences.db')
     cursor = conn.cursor()
     
-    for i in range(0, len(sentencesList)):
+    for sentence in senStringsArr:
+
+        sentenceObject = Sentence(sentence)
+
         #add the norwegian and english sentence into the sentences table
-        norskSentence = sentencesList[i][0]
-        engSentence = sentencesList[i][1]
+        norskSentence = sentenceObject.Norsk_sentence
+        engSentence = sentenceObject.English_sentence
         sentenceQuery = '''INSERT INTO sentences (norsk, english, old, soundfile) SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sentences WHERE norsk = ?);'''
         cursor.execute(sentenceQuery,(norskSentence, engSentence, 0, "None", norskSentence))
         conn.commit()
-        #if sentences added to sentences table
+        #if sentences added to sentences table, add words to words table
         if cursor.rowcount == 1:
 
                 # SQL query to get the most recently added primary key
@@ -70,20 +54,16 @@ def add_sentences_from_file(filename : str):
                 # Fetch the result
                 sentence_id = cursor.fetchone()[0]
                 #add to words dictionary
-                for j in range(2, len(sentencesList[i]) -1, 2):
+                for key in sentenceObject.word_map:
                     query = '''INSERT INTO words (sentence_id, norsk, english) VALUES (?,?,?)'''
-                    sentencesList[i][j] = cleanString(sentencesList[i][j])
-                    sentencesList[i][j+1] = cleanString(sentencesList[i][j+1])
-                    cursor.execute(query, (sentence_id, sentencesList[i][j], sentencesList[i][j+1]))
+                    cleanedNorskWord = cleanString(key)
+                    cleanedEngWord = cleanString(sentenceObject.word_map[key])
+                    cursor.execute(query, (sentence_id, cleanedNorskWord,cleanedEngWord))
                     conn.commit()
+
     cursor.close()
     conn.close()
             
-
-
-    #print(sentencesList)  
-    #print(sentencesList[0][0])
-    #print(sentencesList[len(sentencesList) -1 ][len(sentencesList[len(sentencesList) -1] ) -1])
 
 '''
 Returns input with beginning and ending whitespace and punctuation removed
@@ -93,9 +73,6 @@ def cleanString(inString : str) -> str:
     translation_table = str.maketrans('', '', string.punctuation)
     cleaned_string = inString.translate(translation_table)
     return cleaned_string
-
-
-
 
 
 
@@ -264,6 +241,28 @@ def getAllSentenceIds():
         conn.close()
 
 
+'''
+Delete all data associated with a particular norsk sentence
+'''
+def deleteSentence(norskSentence :string):
+    try:
+        conn = sqlite3.connect('sentences.db')
+        cursor = conn.cursor()
+        findSentenceIdCommand = "SELECT * FROM sentences WHERE norsk = ?"
+        cursor.execute(findSentenceIdCommand, (norskSentence,))
+        out = cursor.fetchall()
+        sentence_id = out[0][0]
+        deleteWordsCommand = "DELETE FROM words WHERE sentence_id = ?"
+        cursor.execute(deleteWordsCommand, (sentence_id,))
+        deleteSentenceCommand = "DELETE FROM sentences WHERE sentence_id = ?"
+        cursor.execute(deleteSentenceCommand, (sentence_id,))
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
 
 '''
 prints contents of tables for testing
@@ -271,7 +270,7 @@ prints contents of tables for testing
 def __test():
     conn = sqlite3.connect('sentences.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT * FROM sentences''')
+    cursor.execute('''SELECT * FROM words''')
     print(cursor.fetchall())
 
 
@@ -284,8 +283,9 @@ def __test():
 #print(getSentences(3))
 #print(getSizeOfSentenceTable())
 
-s = Sentence('{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}')
+#s = Sentence('{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}')
 
+#deleteSentence("Jeg liker å lese bøker om vinteren")
 
 
 
