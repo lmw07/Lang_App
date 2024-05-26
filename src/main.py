@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel
+from modes.RegularModeLayout import RegularModeLayout
 
 # Mode specific layout classes
 class Mode1Layout(QWidget):
@@ -47,7 +48,7 @@ class MainWindow(QMainWindow):
         self.mode3_button = QPushButton('Mode 3', self)
         
         # Connect buttons to the switch_mode method with the corresponding layout class
-        self.mode1_button.clicked.connect(lambda: self.switch_mode(Mode1Layout))
+        self.mode1_button.clicked.connect(lambda: self.switch_mode(RegularModeLayout))
         self.mode2_button.clicked.connect(lambda: self.switch_mode(Mode2Layout))
         self.mode3_button.clicked.connect(lambda: self.switch_mode(Mode3Layout))
         
