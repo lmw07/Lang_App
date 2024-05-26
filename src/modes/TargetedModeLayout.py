@@ -27,6 +27,7 @@ class TargetedModeLayout(QWidget):
     def popAndGatherSentenceData(self):
         sentenceTuple = self.sentenceQueue.popleft()
         self.currNorskSentence, self.currEngSentence, self.dictionary, self.currSentenceID = sentenceTuple
+        
 
 
     def initUI(self):
@@ -137,7 +138,6 @@ class TargetedModeLayout(QWidget):
             self.queueCandidates.append(norskWord)
         self.initQueueLayout()
 
-    #DRY candidate
     def initProgressButtons(self, layout):
         buttonLayout = QHBoxLayout()
         buttonLayout.addStretch()
@@ -177,6 +177,7 @@ class TargetedModeLayout(QWidget):
         else:
             self.generateNewSentencesAndClearCandidates()
             self.popAndGatherSentenceData()
+            self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
             self.initLabels()
             
 
