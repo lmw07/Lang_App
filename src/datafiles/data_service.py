@@ -11,6 +11,11 @@ def getOneRandomSentenceFromDb():
     out = dbmanager.getSentences(2)
     return out[0]
 
+#TODO fix so always returns a known sentence
+def getOneKnownSentenceFromDb():
+    out = dbmanager.getSentences(2)
+    return out[0]
+
 def updateSentenceClass(sentenceId :int, learned : bool):
     dbmanager.updateSentenceClass(sentenceId, learned)
 
