@@ -1,33 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel, QHBoxLayout
+from PyQt5.QtCore import Qt
 from modes.RegularModeLayout import RegularModeLayout
 from modes.TargetedModeLayout import TargetedModeLayout
 from modes.ListeningModeLayout import ListeningModeLayout
 
-# Mode specific layout classes
-class Mode1Layout(QWidget):
-    def __init__(self):
-        super().__init__()
-        layout = QVBoxLayout()
-        label = QLabel("This is Mode 1")
-        layout.addWidget(label)
-        self.setLayout(layout)
-
-class Mode2Layout(QWidget):
-    def __init__(self):
-        super().__init__()
-        layout = QVBoxLayout()
-        label = QLabel("This is Mode 2")
-        layout.addWidget(label)
-        self.setLayout(layout)
-
-class Mode3Layout(QWidget):
-    def __init__(self):
-        super().__init__()
-        layout = QVBoxLayout()
-        label = QLabel("This is Mode 3")
-        layout.addWidget(label)
-        self.setLayout(layout)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -41,13 +18,14 @@ class MainWindow(QMainWindow):
         # Set central widget and layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QHBoxLayout()
         self.central_widget.setLayout(self.main_layout)
+        self.main_layout.addStretch()
 
         # Create mode switch buttons
-        self.mode1_button = QPushButton('Mode 1', self)
-        self.mode2_button = QPushButton('Mode 2', self)
-        self.mode3_button = QPushButton('Mode 3', self)
+        self.mode1_button = QPushButton('Regular Mode', self)
+        self.mode2_button = QPushButton('Targeted Mode', self)
+        self.mode3_button = QPushButton('Listening Mode', self)
         
         # Connect buttons to the switch_mode method with the corresponding layout class
         self.mode1_button.clicked.connect(lambda: self.switch_mode(RegularModeLayout))
@@ -55,18 +33,20 @@ class MainWindow(QMainWindow):
         self.mode3_button.clicked.connect(lambda: self.switch_mode(ListeningModeLayout))
         
         # Add buttons to the main layout
-        self.main_layout.addWidget(self.mode1_button)
-        self.main_layout.addWidget(self.mode2_button)
-        self.main_layout.addWidget(self.mode3_button)
+        self.main_layout.addWidget(self.mode1_button, alignment=Qt.AlignCenter)
+        self.main_layout.addWidget(self.mode2_button, alignment=Qt.AlignCenter)
+        self.main_layout.addWidget(self.mode3_button, alignment=Qt.AlignCenter)
+
+        self.main_layout.addStretch()
 
         # Menu Bar setup
         menubar = self.menuBar()
         change_mode_menu = menubar.addMenu('Change Mode')
 
         # Add mode actions to menu
-        self.add_mode_action(change_mode_menu, 'Mode 1', RegularModeLayout)
-        self.add_mode_action(change_mode_menu, 'Mode 2', TargetedModeLayout)
-        self.add_mode_action(change_mode_menu, 'Mode 3', ListeningModeLayout)
+        self.add_mode_action(change_mode_menu, 'Regular Mode', RegularModeLayout)
+        self.add_mode_action(change_mode_menu, 'Targeted Mode', TargetedModeLayout)
+        self.add_mode_action(change_mode_menu, 'Listening Mode', ListeningModeLayout)
 
     def add_mode_action(self, menu, mode_name, mode_class):
         action = QAction(mode_name, self)
