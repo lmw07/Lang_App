@@ -31,7 +31,7 @@ class RegularModeLayout(QWidget):
             self.on_change_set_button_clicked()
 
     def updateWorkingSet(self, size):
-        self.workingSet = data_service.getRandomSentencesFromDb(size)
+        self.workingSet = data_service.getMultipleRandomSentencesFromDb(size)
 
     def getATupleFromWorkingSet(self):
         return random.choice(self.workingSet) if self.workingSet else None
