@@ -51,6 +51,10 @@ class TargetedModeLayout(QWidget):
 
         self.initProgressButtons(layout)
 
+        self.queuedCandidatesLayout = QHBoxLayout()
+        self.initQueueLayout()
+        layout.addLayout(self.queuedCandidatesLayout)
+
             #Maybe add in later
         # changeSetButton = QPushButton("Randomize the current sentence set")
         # changeSetButton.clicked.connect(self.on_change_set_button_clicked)
@@ -85,6 +89,25 @@ class TargetedModeLayout(QWidget):
     #         print("An error occurred:", e)
 
 
+
+    def initQueueLayout(self):
+        while self.queuedCandidatesLayout.count():
+            layoutItem = self.queuedCandidatesLayout.takeAt(0)
+            if layoutItem.widget():
+                layoutItem.widget().deleteLater()
+        # Reapply stretch to ensure labels are centered
+        self.queuedCandidatesLayout.addStretch()
+        if len(self.queueCandidates) == 0:
+            label = QLabel("")
+            label.setFont(QFont('Arial', 18)) 
+            self.queuedCandidatesLayout.addWidget(label)
+        for word in self.queueCandidates:
+            label = QLabel(word)
+            label.setFont(QFont('Arial', 18)) 
+            self.queuedCandidatesLayout.addWidget(label)
+        self.queuedCandidatesLayout.addStretch()
+
+
     def initLabels(self):
         # Clear existing widgets from the sentence layout
         while self.sentenceLayout.count():
@@ -99,7 +122,7 @@ class TargetedModeLayout(QWidget):
         for word, translation in self.dictionary.items():
             label = ClickableLabel(word, translation)
 
-            label.clicked.connect(lambda: self.updateQueueCandidates(label.word))
+            label.clicked.connect(lambda word=word: self.updateQueueCandidates(word))
             self.sentenceLayout.addWidget(label)
             self.labels.append(label)
 
@@ -112,6 +135,7 @@ class TargetedModeLayout(QWidget):
             self.queueCandidates.remove(norskWord)
         else:
             self.queueCandidates.append(norskWord)
+        self.initQueueLayout()
 
     #DRY candidate
     def initProgressButtons(self, layout):
@@ -139,9 +163,12 @@ class TargetedModeLayout(QWidget):
         self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
 
     def generateNewSentencesAndClearCandidates(self):
-        self.sentenceQueue = deque(self.sentenceQueue + data_service.getSentencesFromWords(self.queueCandidates))
+        if len(self.queueCandidates) == 0:
+            return
+        self.sentenceQueue = self.sentenceQueue + deque(data_service.getSentencesFromWords(self.queueCandidates))
         self.queueCandidates.clear()
-        
+        self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
+        self.initQueueLayout()
 
     def on_continue_clicked(self):
         if len(self.sentenceQueue) == 0 and len(self.queueCandidates) == 0:
