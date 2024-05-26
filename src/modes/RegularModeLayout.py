@@ -140,7 +140,7 @@ class RegularModeLayout(QWidget):
         self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
 
     def on_progress_button_clicked(self, knewIt):
-        dbmanager.updateSentenceClass(self.currSentenceID, knewIt)
+        data_service.updateSentenceClass(self.currSentenceID, knewIt)
         if knewIt:
             for tup in self.workingSet:
                 if self.currNorskSentence == tup[0]:

@@ -6,3 +6,6 @@ def getSoundFile(sentenceId : int) -> str:
 
 def getRandomSentencesFromDb(numberToGet : int) ->list:
     return dbmanager.getSentences(numberToGet)
+
+def updateSentenceClass(sentenceId :int, learned : bool):
+    dbmanager.updateSentenceClass(sentenceId, learned)
