@@ -1,205 +1,88 @@
 import sys
-import random
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QMainWindow, QAction, QInputDialog
-from PyQt5.QtCore import Qt, pyqtSignal, QUrl
-from PyQt5.QtGui import QFont
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-import data_files.dbmanager as dbmanager
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel
 
-class ClickableLabel(QLabel):
-    clicked = pyqtSignal()
-
-    def __init__(self, word, translation):
+# Mode specific layout classes
+class Mode1Layout(QWidget):
+    def __init__(self):
         super().__init__()
-        self.word = word
-        self.translation = translation
-        self.isTranslationShown = False
-        self.setText(word)
-        self.setAlignment(Qt.AlignCenter)
-        self.setMouseTracking(True)
-        self.setFontSize(14)
+        layout = QVBoxLayout()
+        label = QLabel("This is Mode 1")
+        layout.addWidget(label)
+        self.setLayout(layout)
 
-    def mousePressEvent(self, event):
-        self.setText(self.translation if not self.isTranslationShown else self.word)
-        self.isTranslationShown = not self.isTranslationShown
-        self.clicked.emit()
+class Mode2Layout(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        label = QLabel("This is Mode 2")
+        layout.addWidget(label)
+        self.setLayout(layout)
 
-    def enterEvent(self, event):
-        self.setStyleSheet("QLabel { color : blue; }")
-
-    def leaveEvent(self, event):
-        self.setStyleSheet("QLabel { color : black; }")
-
-    def setFontSize(self, size):
-        font = self.font()
-        font.setPointSize(size)
-        self.setFont(font)
+class Mode3Layout(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        label = QLabel("This is Mode 3")
+        layout.addWidget(label)
+        self.setLayout(layout)
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Language Learning App')
-        self.setGeometry(100, 100, 800, 600)
-        self.workingSet = []
-        self.fullWorkingSetSize = 8
-        self.labels = []
-        self.centralWidget = QWidget()
-        self.setCentralWidget(self.centralWidget)
-        self.updateWorkingSet(self.fullWorkingSetSize)
         self.initUI()
-        self.initMenuBar()
-        
-        self.player = QMediaPlayer()
-        
-
-
-    def initMenuBar(self):
-        menuBar = self.menuBar()
-        setConfigMenu = menuBar.addMenu("Adjust Set Configuration")
-
-        changeSetSizeAction = QAction("Change Set Size", self)
-        changeSetSizeAction.triggered.connect(self.onChangeSetSizeClicked)
-        setConfigMenu.addAction(changeSetSizeAction)
-
- 
-    def onChangeSetSizeClicked(self):
-        newSize, ok = QInputDialog.getInt(self, "Change Set Size", "Enter the new set size:", value=self.fullWorkingSetSize, min=2)
-        if ok:
-            self.fullWorkingSetSize = newSize
-            self.on_change_set_button_clicked()
-
-    def updateWorkingSet(self, size):
-        self.workingSet = dbmanager.getSentences(size)
-
-    def getATupleFromWorkingSet(self):
-        return random.choice(self.workingSet) if self.workingSet else None
 
     def initUI(self):
-        self.centralWidget = QWidget()  # Create a central widget
-        self.setCentralWidget(self.centralWidget)  # Set it as the central widget of QMainWindow
-        layout = QVBoxLayout()
-        layout.addStretch()
+        self.setWindowTitle('Language Learning App')
+        self.setGeometry(100, 100, 800, 600)  # x, y, width, height
 
-        self.counterBox = QLabel(f"Sentences left in set: {len(self.workingSet)}")
-        layout.addWidget(self.counterBox, alignment=Qt.AlignCenter)
+        # Set central widget and layout
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.main_layout = QVBoxLayout()
+        self.central_widget.setLayout(self.main_layout)
 
-        self.sentenceLayout = QHBoxLayout()
-        self.initLabels()
-        layout.addLayout(self.sentenceLayout)
-
-        self.translatedSentenceBox = QLabel("")
-        self.translatedSentenceBox.setFont(QFont('Arial', 12)) 
-        layout.addWidget(self.translatedSentenceBox, alignment=Qt.AlignCenter)
-
-        translateButton = QPushButton("Translate")
-        translateButton.clicked.connect(self.on_translate_button_clicked)
-        layout.addWidget(translateButton, alignment=Qt.AlignCenter)
-
-        self.initProgressButtons(layout)
-
-        changeSetButton = QPushButton("Randomize the current sentence set")
-        changeSetButton.clicked.connect(self.on_change_set_button_clicked)
-        layout.addWidget(changeSetButton, alignment=Qt.AlignCenter)
-
+        # Create mode switch buttons
+        self.mode1_button = QPushButton('Mode 1', self)
+        self.mode2_button = QPushButton('Mode 2', self)
+        self.mode3_button = QPushButton('Mode 3', self)
         
-
-        # Button to play sound
-        playButton = QPushButton('Play Sound', self)
-        playButton.clicked.connect(self.playSound)
+        # Connect buttons to the switch_mode method with the corresponding layout class
+        self.mode1_button.clicked.connect(lambda: self.switch_mode(Mode1Layout))
+        self.mode2_button.clicked.connect(lambda: self.switch_mode(Mode2Layout))
+        self.mode3_button.clicked.connect(lambda: self.switch_mode(Mode3Layout))
         
-        # Add the button to the layout
-        layout.addWidget(playButton)
+        # Add buttons to the main layout
+        self.main_layout.addWidget(self.mode1_button)
+        self.main_layout.addWidget(self.mode2_button)
+        self.main_layout.addWidget(self.mode3_button)
 
+        # Menu Bar setup
+        menubar = self.menuBar()
+        change_mode_menu = menubar.addMenu('Change Mode')
 
-        layout.addStretch()
-        self.centralWidget.setLayout(layout)
+        # Add mode actions to menu
+        self.add_mode_action(change_mode_menu, 'Mode 1', Mode1Layout)
+        self.add_mode_action(change_mode_menu, 'Mode 2', Mode2Layout)
+        self.add_mode_action(change_mode_menu, 'Mode 3', Mode3Layout)
 
+    def add_mode_action(self, menu, mode_name, mode_class):
+        action = QAction(mode_name, self)
+        action.triggered.connect(lambda: self.switch_mode(mode_class))
+        menu.addAction(action)
 
+    def switch_mode(self, mode_class):
+        # Clear the existing layout content
+        while self.main_layout.count():
+            child = self.main_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
-    def playSound(self, speed = 1.0):
-        soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
-        try:
-            if not hasattr(self, 'player'):
-                self.player = QMediaPlayer()
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
-            self.player.setPlaybackRate(speed)
-            self.player.play()
-        except Exception as e:
-            print("An error occurred:", e)
+        # Load the new mode layout
+        mode_layout = mode_class()
+        self.main_layout.addWidget(mode_layout)
 
-
-
-
-
-
-    def initLabels(self):
-        # Clear existing widgets from the sentence layout
-        while self.sentenceLayout.count():
-            layoutItem = self.sentenceLayout.takeAt(0)
-            if layoutItem.widget():
-                layoutItem.widget().deleteLater()
-        
-        # Reapply stretch to ensure labels are centered
-        self.sentenceLayout.addStretch()
-
-        sentenceTuple = self.getATupleFromWorkingSet()
-        if sentenceTuple:
-            self.currNorskSentence, self.currEngSentence, dictionary, self.currSentenceID = sentenceTuple
-            for word, translation in dictionary.items():
-                label = ClickableLabel(word, translation)
-                self.sentenceLayout.addWidget(label)
-                self.labels.append(label)
-
-        # Add stretch after labels to keep them centered
-        self.sentenceLayout.addStretch()
-        self.playSound()
-
-
-    def initProgressButtons(self, layout):
-        buttonLayout = QHBoxLayout()
-        buttonLayout.addStretch()
-
-        didNotLearnButton = QPushButton("I didn't know it :(")
-        didNotLearnButton.setStyleSheet("background-color: crimson;")
-        didNotLearnButton.clicked.connect(lambda: self.on_progress_button_clicked(False))
-        buttonLayout.addWidget(didNotLearnButton)
-
-        learnedButton = QPushButton("I knew it!")
-        learnedButton.setStyleSheet("background-color: lightgreen;")
-        learnedButton.clicked.connect(lambda: self.on_progress_button_clicked(True))
-        buttonLayout.addWidget(learnedButton)
-
-        buttonLayout.addStretch()
-        layout.addLayout(buttonLayout)
-
-    def on_change_set_button_clicked(self):
-        self.updateWorkingSet(self.fullWorkingSetSize)
-        self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
-        self.translatedSentenceBox.setText("")
-        self.initLabels()
-
-    def on_translate_button_clicked(self):
-        self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
-
-    def on_progress_button_clicked(self, knewIt):
-        dbmanager.updateSentenceClass(self.currSentenceID, knewIt)
-        if knewIt:
-            for tup in self.workingSet:
-                if self.currNorskSentence == tup[0]:
-                    tupeToRemove = tup
-            self.workingSet.remove(tupeToRemove)
-            if not self.workingSet:
-                QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
-                self.on_change_set_button_clicked()
-        self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
-        self.translatedSentenceBox.setText("")
-        self.initLabels()
-
-def main():
-    app = QApplication(sys.argv)
-    mainWindow = MainWindow()
-    mainWindow.show()
-    sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()
+# Application setup
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+sys.exit(app.exec_())
