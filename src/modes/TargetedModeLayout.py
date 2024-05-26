@@ -1,4 +1,5 @@
 
+from collections import deque
 import random
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QInputDialog
 from PyQt5.QtCore import Qt, QUrl
@@ -13,34 +14,27 @@ class TargetedModeLayout(QWidget):
     def __init__(self):
         super().__init__()
         self.workingSet = []
-        self.fullWorkingSetSize = 8
         self.labels = []
         self.centralWidget = QWidget()
-        self.updateWorkingSet(self.fullWorkingSetSize)
+        self.sentenceTuple = data_service.getOneRandomSentenceFromDb()
+        self.sentenceQueue = deque([self.sentenceTuple])
+        self.popAndGatherSentenceData()
+        #words to generate sentences for
+        self.queueCandidates = deque()
         self.initUI()
+        #self.player = QMediaPlayer()
         
-        self.player = QMediaPlayer()
-        
+    def popAndGatherSentenceData(self):
+        sentenceTuple = self.sentenceQueue.popleft()
+        self.currNorskSentence, self.currEngSentence, self.dictionary, self.currSentenceID = sentenceTuple
 
- 
-    def onChangeSetSizeClicked(self):
-        newSize, ok = QInputDialog.getInt(self, "Change Set Size", "Enter the new set size:", value=self.fullWorkingSetSize, min=2)
-        if ok:
-            self.fullWorkingSetSize = newSize
-            self.on_change_set_button_clicked()
-
-    def updateWorkingSet(self, size):
-        self.workingSet = data_service.getRandomSentencesFromDb(size)
-
-    def getATupleFromWorkingSet(self):
-        return random.choice(self.workingSet) if self.workingSet else None
 
     def initUI(self):
        # self.centralWidget = QWidget()  # Create a central widget #DRY candidate
         layout = QVBoxLayout()
         layout.addStretch()
 
-        self.counterBox = QLabel(f"Sentences left in set: {len(self.workingSet)}")
+        self.counterBox = QLabel(f"Sentences left in set: {len(self.sentenceQueue)}")
         layout.addWidget(self.counterBox, alignment=Qt.AlignCenter)
 
         self.sentenceLayout = QHBoxLayout()
@@ -57,6 +51,7 @@ class TargetedModeLayout(QWidget):
 
         self.initProgressButtons(layout)
 
+            #Maybe add in later
         # changeSetButton = QPushButton("Randomize the current sentence set")
         # changeSetButton.clicked.connect(self.on_change_set_button_clicked)
         # layout.addWidget(changeSetButton, alignment=Qt.AlignCenter)
@@ -76,18 +71,18 @@ class TargetedModeLayout(QWidget):
 
 
 
-    # Not currently used, might be used in future if real time sound generation is added to this mode
-    def playSound(self, speed = 1.0):
-        soundFile = data_service.getSoundFile(self.currSentenceID)
+        # Not currently used, might be used in future if real time sound generation is added to this mode
+    # def playSound(self, speed = 1.0):
+    #     soundFile = data_service.getSoundFile(self.currSentenceID)
         
-        try:
-            if not hasattr(self, 'player'):
-                self.player = QMediaPlayer()
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
-            self.player.setPlaybackRate(speed)
-            self.player.play()
-        except Exception as e:
-            print("An error occurred:", e)
+    #     try:
+    #         if not hasattr(self, 'player'):
+    #             self.player = QMediaPlayer()
+    #         self.player.setMedia(QMediaContent(QUrl.fromLocalFile(soundFile)))
+    #         self.player.setPlaybackRate(speed)
+    #         self.player.play()
+    #     except Exception as e:
+    #         print("An error occurred:", e)
 
 
     def initLabels(self):
@@ -100,55 +95,65 @@ class TargetedModeLayout(QWidget):
         # Reapply stretch to ensure labels are centered
         self.sentenceLayout.addStretch()
 
-        sentenceTuple = self.getATupleFromWorkingSet()
-        if sentenceTuple:
-            self.currNorskSentence, self.currEngSentence, dictionary, self.currSentenceID = sentenceTuple
-            for word, translation in dictionary.items():
-                label = ClickableLabel(word, translation)
-                self.sentenceLayout.addWidget(label)
-                self.labels.append(label)
+        
+        for word, translation in self.dictionary.items():
+            label = ClickableLabel(word, translation)
+
+            label.clicked.connect(lambda: self.updateQueueCandidates(label.word))
+            self.sentenceLayout.addWidget(label)
+            self.labels.append(label)
 
         # Add stretch after labels to keep them centered
         self.sentenceLayout.addStretch()
         #self.playSound()
 
+    def updateQueueCandidates(self,norskWord):
+        if norskWord in self.queueCandidates:
+            self.queueCandidates.remove(norskWord)
+        else:
+            self.queueCandidates.append(norskWord)
 
+    #DRY candidate
     def initProgressButtons(self, layout):
         buttonLayout = QHBoxLayout()
         buttonLayout.addStretch()
 
-        didNotLearnButton = QPushButton("I didn't know it :(")
-        didNotLearnButton.setStyleSheet("background-color: crimson;")
-        didNotLearnButton.clicked.connect(lambda: self.on_progress_button_clicked(False))
-        buttonLayout.addWidget(didNotLearnButton)
-
-        learnedButton = QPushButton("I knew it!")
+        learnedButton = QPushButton("Continue")
         learnedButton.setStyleSheet("background-color: lightgreen;")
-        learnedButton.clicked.connect(lambda: self.on_progress_button_clicked(True))
+        learnedButton.clicked.connect(lambda: self.on_continue_clicked())
         buttonLayout.addWidget(learnedButton)
 
         buttonLayout.addStretch()
         layout.addLayout(buttonLayout)
 
     def on_change_set_button_clicked(self):
-        self.updateWorkingSet(self.fullWorkingSetSize)
-        self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
+        self.sentenceQueue.clear()
+        sentenceTuple = data_service.getOneRandomSentenceFromDb()
+        self.sentenceQueue = deque([sentenceTuple])
+        self.popAndGatherSentenceData()
+        self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
         self.translatedSentenceBox.setText("")
         self.initLabels()
 
     def on_translate_button_clicked(self):
         self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
 
-    def on_progress_button_clicked(self, knewIt):
-        data_service.updateSentenceClass(self.currSentenceID, knewIt)
-        if knewIt:
-            for tup in self.workingSet:
-                if self.currNorskSentence == tup[0]:
-                    tupeToRemove = tup
-            self.workingSet.remove(tupeToRemove)
-            if not self.workingSet:
-                QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
-                self.on_change_set_button_clicked()
-        self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
-        self.translatedSentenceBox.setText("")
-        self.initLabels()
+    def generateNewSentencesAndClearCandidates(self):
+        self.sentenceQueue = deque(self.sentenceQueue + data_service.getSentencesFromWords(self.queueCandidates))
+        self.queueCandidates.clear()
+        
+
+    def on_continue_clicked(self):
+        if len(self.sentenceQueue) == 0 and len(self.queueCandidates) == 0:
+            QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
+            self.on_change_set_button_clicked()
+        else:
+            self.generateNewSentencesAndClearCandidates()
+            self.popAndGatherSentenceData()
+            self.initLabels()
+            
+
+        
+        #self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
+        #self.translatedSentenceBox.setText("")
+        #self.initLabels()
