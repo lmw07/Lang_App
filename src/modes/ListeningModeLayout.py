@@ -18,7 +18,8 @@ class ListeningModeLayout(QWidget):
         self.initUI()
         
         self.player = QMediaPlayer()
-        
+        self.playSound()
+
     def getSentence(self):
         self.sentenceTuple = data_service.getOneKnownSentenceFromDb()
         self.currNorskSentence, self.currEngSentence, self.dictionary, self.currSentenceID = self.sentenceTuple
@@ -102,4 +103,5 @@ class ListeningModeLayout(QWidget):
 
     def on_progress_button_clicked(self, knewIt):
         self.getSentence()
-        self.initLabels()
+        self.playSound()
+ 
