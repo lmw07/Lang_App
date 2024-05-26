@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLay
 from PyQt5.QtCore import Qt, pyqtSignal, QUrl
 from PyQt5.QtGui import QFont
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-import data_files.dbmanager as dbmanager
+import datafiles.dbmanager as dbmanager
 from modes.ClickableLabel import ClickableLabel
+import datafiles.data_service as data_service
 
 
 class RegularModeLayout(QWidget):
@@ -77,7 +78,8 @@ class RegularModeLayout(QWidget):
 
     #TODO fix so it follows abstraction rules
     def playSound(self, speed = 1.0):
-        soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
+        soundFile = data_service.getSoundFile(self.currSentenceID)
+        #soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
         try:
             if not hasattr(self, 'player'):
                 self.player = QMediaPlayer()
