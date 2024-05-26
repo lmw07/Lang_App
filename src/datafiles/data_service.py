@@ -4,16 +4,22 @@ import datafiles.dbmanager as dbmanager
 def getSoundFile(sentenceId : int) -> str:
     return dbmanager.getSentenceSound(sentenceId)[1]
 
-def getMultipleRandomSentencesFromDb(numberToGet : int) ->list:
-    return dbmanager.getSentences(numberToGet)
+def getMultipleRandomSentencesFromDb(numberToGet : int, oldFraction = 0) ->list:
+    if oldFraction > 1 or oldFraction < 0:
+        raise ValueError("oldFraction must be between 0 and 1")
+    numberOld = oldFraction * numberToGet
+    numberNew = numberToGet - numberOld
+    out = dbmanager.getRandomSentences(numberNew, 'NEW')
+    out = out + dbmanager.getRandomSentences(numberOld, 'OLD')
+    return out
 
 def getOneRandomSentenceFromDb():
-    out = dbmanager.getSentences(2)
+    out = dbmanager.getRandomSentences(1)
     return out[0]
 
-#TODO fix so always returns a known sentence
+
 def getOneKnownSentenceFromDb():
-    out = dbmanager.getSentences(2)
+    out = dbmanager.getRandomSentences(1, 'OLD')
     return out[0]
 
 def updateSentenceClass(sentenceId :int, learned : bool):
@@ -21,6 +27,6 @@ def updateSentenceClass(sentenceId :int, learned : bool):
 
 #TODO fix
 def getSentencesFromWords(wordList) :
-    return dbmanager.getSentences(len(wordList) * 5) #PLACEHOLDER
+    return dbmanager.getRandomSentences(len(wordList) * 5) #PLACEHOLDER
     #for all words in word list check database for 5 sentences that have that word
     #generate the ones you dont have with API call
