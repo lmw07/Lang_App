@@ -69,7 +69,7 @@ class RegularModeLayout(QWidget):
         playButton.clicked.connect(self.playSound)
         
         # Add the button to the layout
-        layout.addWidget(playButton)
+        layout.addWidget(playButton, alignment=Qt.AlignCenter)
 
 
         layout.addStretch()
