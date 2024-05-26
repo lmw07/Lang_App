@@ -17,8 +17,11 @@ class RegularModeLayout(QWidget):
         self.fullWorkingSetSize = 8
         self.labels = []
         self.centralWidget = QWidget()
+        #modify to change composition of working set
+        self.fractionOld = 0.25
         self.updateWorkingSet(self.fullWorkingSetSize)
         self.initUI()
+        
         
         self.player = QMediaPlayer()
         
@@ -31,7 +34,7 @@ class RegularModeLayout(QWidget):
             self.on_change_set_button_clicked()
 
     def updateWorkingSet(self, size):
-        self.workingSet = data_service.getMultipleRandomSentencesFromDb(size)
+        self.workingSet = data_service.getMultipleRandomSentencesFromDb(size, self.fractionOld)
 
     def getATupleFromWorkingSet(self):
         return random.choice(self.workingSet) if self.workingSet else None
