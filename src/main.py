@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel
 from modes.RegularModeLayout import RegularModeLayout
 from modes.TargetedModeLayout import TargetedModeLayout
+from modes.ListeningModeLayout import ListeningModeLayout
 
 # Mode specific layout classes
 class Mode1Layout(QWidget):
@@ -51,7 +52,7 @@ class MainWindow(QMainWindow):
         # Connect buttons to the switch_mode method with the corresponding layout class
         self.mode1_button.clicked.connect(lambda: self.switch_mode(RegularModeLayout))
         self.mode2_button.clicked.connect(lambda: self.switch_mode(TargetedModeLayout))
-        self.mode3_button.clicked.connect(lambda: self.switch_mode(Mode3Layout))
+        self.mode3_button.clicked.connect(lambda: self.switch_mode(ListeningModeLayout))
         
         # Add buttons to the main layout
         self.main_layout.addWidget(self.mode1_button)
@@ -65,7 +66,7 @@ class MainWindow(QMainWindow):
         # Add mode actions to menu
         self.add_mode_action(change_mode_menu, 'Mode 1', RegularModeLayout)
         self.add_mode_action(change_mode_menu, 'Mode 2', TargetedModeLayout)
-        self.add_mode_action(change_mode_menu, 'Mode 3', Mode3Layout)
+        self.add_mode_action(change_mode_menu, 'Mode 3', ListeningModeLayout)
 
     def add_mode_action(self, menu, mode_name, mode_class):
         action = QAction(mode_name, self)
