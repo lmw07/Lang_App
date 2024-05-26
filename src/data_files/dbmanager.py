@@ -8,6 +8,7 @@ import sqlite3
 import string
 import json
 
+sentencePath = "database\sentences.db"
 
 class Sentence:
     def __init__(self, inputString) -> None:
@@ -31,7 +32,7 @@ def add_sentences_from_file(filename : str):
         senStringsArr = file.readlines()
         senStringsArr = [sentence.encode("latin1").decode("utf-8") for sentence in senStringsArr]
 
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
     
     for sentence in senStringsArr:
@@ -83,7 +84,7 @@ def cleanString(inString : str) -> str:
 Creates the sentences and words tables
 '''
 def createTables():
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
 
     # Create table
@@ -113,7 +114,7 @@ String list of tuples in format :  norwegian sentence, english sentence, dict{no
 '''
 def getSentences(numberToGet : int) -> list:
     # Connect to the SQLite database
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
 
     
@@ -159,7 +160,7 @@ def getSentences(numberToGet : int) -> list:
 
 def getSizeOfSentenceTable() -> int:
     # Connect to the SQLite database
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
 
     # Execute the query to count the rows
@@ -178,7 +179,7 @@ def updateSentenceClass(sentence_id : int, learned : bool):
         oldOrNew = 1
 
     # Connect to the SQLite database
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
     cursor.execute('UPDATE sentences SET old = ? WHERE sentence_id = ?', (oldOrNew,sentence_id))
     conn.commit()
@@ -191,7 +192,7 @@ def updateSentenceClass(sentence_id : int, learned : bool):
 Returns a tuple where the first element is the norwegian sentence and the second element is a filepath to a sound file
 '''
 def getSentenceSound(sentence_id : int) -> str:
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM sentences WHERE sentence_id = ?', (sentence_id,))
     out = cursor.fetchall()
@@ -201,7 +202,7 @@ def getSentenceSound(sentence_id : int) -> str:
     return outTup
     
 def updateSentenceSound(sentence_id : int, soundfile: str):
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
     cursor.execute('UPDATE sentences SET soundfile = ? WHERE sentence_id = ?', (soundfile,sentence_id))
     conn.commit()
@@ -212,7 +213,7 @@ def updateSentenceSound(sentence_id : int, soundfile: str):
 removes both tables completely
 '''
 def __clearTables():
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
     cursor.execute('''DROP TABLE sentences''')
     cursor.execute('''DROP TABLE words''')
@@ -250,7 +251,7 @@ def deleteSentence(sentence_id : int = None, norskSentence :string = None):
     if not sentence_id and not norskSentence:
         raise Exception("Must provide either sentence id or Norwegian text")
     try:
-        conn = sqlite3.connect('sentences.db')
+        conn = sqlite3.connect(sentencePath)
         cursor = conn.cursor()
         if not sentence_id:
             findSentenceIdCommand = "SELECT * FROM sentences WHERE norsk = ?"
@@ -276,7 +277,7 @@ def deleteSentence(sentence_id : int = None, norskSentence :string = None):
 prints contents of tables for testing
 '''
 def __test():
-    conn = sqlite3.connect('sentences.db')
+    conn = sqlite3.connect('database\sentences.db')
     cursor = conn.cursor()
     cursor.execute('''SELECT * FROM sentences''')
     print(cursor.fetchall())
@@ -324,6 +325,6 @@ def fix_encoding(db_path, table_name, column_name):
     print("Database update complete.")
 
 # Example usage
-fix_encoding('sentences.db', 'sentences', 'norsk')
+#fix_encoding(sentencePath, 'sentences', 'norsk')
 __test()
 
