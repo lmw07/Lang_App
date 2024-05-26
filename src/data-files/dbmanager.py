@@ -1,3 +1,5 @@
+
+
 '''
 This file contains methods to access and modify the database where the sentences are stored.
 The database should have 2 tables: sentences and words
@@ -27,7 +29,7 @@ def add_sentences_from_file(filename : str):
 
     with open(filename) as file:
         senStringsArr = file.readlines()
-        senStringsArr = [sentence.encode("utf-8").decode("utf-8") for sentence in senStringsArr]
+        senStringsArr = [sentence.encode("latin1").decode("utf-8") for sentence in senStringsArr]
 
     conn = sqlite3.connect('sentences.db')
     cursor = conn.cursor()
@@ -284,9 +286,9 @@ def __test():
 #print(getSentenceSound(1))
 #createTables()
 #add_sentences_from_file("sentences_to_add.txt")
-#__test()
+
 #__clearTables()
-#print(getSentences(3))
+#print(getSentences(300))
 #print(getSizeOfSentenceTable())
 
 #s = Sentence('{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}')
@@ -296,5 +298,32 @@ def __test():
 
 
 
+def fix_encoding(db_path, table_name, column_name):
+    # Connect to the SQLite database
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Query to fetch all rows from the specified table and column
+    cursor.execute(f"SELECT rowid, {column_name} FROM {table_name}")
+    rows = cursor.fetchall()
+    
+    # Iterate through all fetched rows
+    for row_id, text in rows:
+        try:
+            
+            corrected_text = text.replace("Ã¥", "å").replace("Ã¦","æ" ).replace("Ã¸", "ø")
+            # Update the row with the corrected text
+            cursor.execute(f"UPDATE {table_name} SET {column_name} = ? WHERE rowid = ?", (corrected_text, row_id))
+        except UnicodeEncodeError:
+            # If there's an encoding error, skip the update for this row
+            print(f"Skipping row {row_id} due to encoding issues.")
+    
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+    print("Database update complete.")
 
+# Example usage
+fix_encoding('sentences.db', 'sentences', 'norsk')
+__test()
 
