@@ -108,31 +108,30 @@ def createTables():
 
 '''
 Gets a random list of sentences, including their english translation and their associated words
-PARAM: numberToGet: the number of sentences to fetch. 1/4 of these will be chosen from old sentences
+
+PARAM: numberToGet: the number of sentences to fetch.
+PARAM: status: must be 'OLD' or 'NEW'. Indicates whether to return learned or new sentences
 RETURNS:
 String list of tuples in format :  norwegian sentence, english sentence, dict{norsk word 1 : english word 1, norsk word 2 : english word 2..., sentence_id
 '''
-def getSentences(numberToGet : int) -> list:
+def getRandomSentences(numberToGet : int, status = 'NEW') -> list:
+    if status != "OLD" and status != "NEW":
+        raise ValueError("Invalid status. Must be OLD or NEW")
+    
+    statusNum = 1
+    if status == "NEW":
+        statusNum = 0
     # Connect to the SQLite database
     conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
-
-    
-
-   
     rows_count = getSizeOfSentenceTable()
     if numberToGet >= 1 and numberToGet <= rows_count:
         # SQL query to fetch 3 random rows
-        query = "SELECT * FROM sentences WHERE old = 0 ORDER BY RANDOM() LIMIT ?"
+        query = "SELECT * FROM sentences WHERE old = ? ORDER BY RANDOM() LIMIT ?"
 
         # Execute the query
-        cursor.execute(query, (int(numberToGet * 0.75),))
+        cursor.execute(query, (statusNum, numberToGet,))
         random_rows = cursor.fetchall()
-
-        query = "SELECT * FROM sentences WHERE old = 1 ORDER BY RANDOM() LIMIT ?"
-        cursor.execute(query, (numberToGet  // 4,))
-        random_rows = random_rows + cursor.fetchall()
-        # list of rows, each has format [sentence_id, norwegian, english]
         
         sentencesAndWordsList = []
         for row in random_rows:
@@ -326,5 +325,5 @@ def fix_encoding(db_path, table_name, column_name):
 
 # Example usage
 #fix_encoding(sentencePath, 'sentences', 'norsk')
-__test()
+#__test()
 
