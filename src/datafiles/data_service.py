@@ -9,9 +9,14 @@ def getMultipleRandomSentencesFromDb(numberToGet : int, oldFraction = 0) ->list:
         raise ValueError("oldFraction must be between 0 and 1")
     numberOld = oldFraction * numberToGet
     numberNew = numberToGet - numberOld
-    out = dbmanager.getRandomSentences(numberNew, 'NEW')
-    out = out + dbmanager.getRandomSentences(numberOld, 'OLD')
-    return out
+    outNew = dbmanager.getRandomSentences(numberNew, 'NEW')
+    outOld = dbmanager.getRandomSentences(numberOld, 'OLD')
+    if outNew and outOld:
+        return outOld + outNew
+    if outNew and not outOld:
+        return outNew
+    if outOld and not outNew:
+        return outOld
 
 def getOneRandomSentenceFromDb():
     out = dbmanager.getRandomSentences(1)
