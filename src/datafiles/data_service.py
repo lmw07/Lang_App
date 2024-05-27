@@ -1,6 +1,7 @@
 import datafiles.dbmanager as dbmanager
 from datafiles.sentence import Sentence
 import datafiles.sound_manager as sound_manager
+import datafiles.sentence_fetcher as sentence_fetcher
 
 def getSoundFile(sentenceId : int) -> str:
     return dbmanager.getSentenceSound(sentenceId)[1]
@@ -31,11 +32,27 @@ def getOneKnownSentenceFromDb():
 def updateSentenceClass(sentenceId :int, learned : bool):
     dbmanager.updateSentenceClass(sentenceId, learned)
 
-#TODO fix
-def getSentencesFromWords(wordList) :
-    return dbmanager.getRandomSentences(len(wordList) * 5) #PLACEHOLDER
+
+
+def getSentencesFromWords(wordList : list, numberOfSentencesToGet = 5) -> list:
+    #return dbmanager.getRandomSentences(len(wordList) * 5) #PLACEHOLDER
     #for all words in word list check database for 5 sentences that have that word
     #generate the ones you dont have with API call
+    out = []
+    wordsToGenerate = []
+    for word in wordList:
+        sentences = dbmanager.getSentencesFromWord(word)
+        if len(sentences) < numberOfSentencesToGet:
+            wordsToGenerate.append(word)
+        else:
+            out = out + sentences[:5]
+    if len(wordsToGenerate) > 0:
+        generatedSentences = sentence_fetcher.getSentencesWithSpecificWords(wordsToGenerate, numberOfSentencesToGet)
+        for sentence in generatedSentences:
+            dbmanager.addSentence(sentence)
+    if generatedSentences:
+        out = out + generatedSentences
+    return out
 
 
 
