@@ -4,12 +4,46 @@ from PyQt5.QtCore import Qt
 from modes.RegularModeLayout import RegularModeLayout
 from modes.TargetedModeLayout import TargetedModeLayout
 from modes.ListeningModeLayout import ListeningModeLayout
+from PyQt5.QtCore import QThread, pyqtSignal
+
+import datafiles.data_service as data_service
+
+class DatabaseWorker(QThread):
+    finished = pyqtSignal()  # Signal to indicate completion
+
+    def __init__(self, db_function, *args, **kwargs):
+        super().__init__()
+        self.db_function = db_function
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        # Call the existing database operation function with provided arguments
+        try:
+            self.db_function(*self.args, **self.kwargs)
+        except Exception as e:
+            print(f"Error during database operation: {e}")
+        finally:
+            self.finished.emit()  # Emit the finished signal when done
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.startBackgroundTask()
+
+    def startBackgroundTask(self):
+        # Initialize and start the worker thread
+        self.db_worker = DatabaseWorker(data_service.get_sounds_for_all_sentences)
+        self.db_worker.finished.connect(self.onBackgroundTaskFinished)
+        self.db_worker.start()
+
+
+    #Stub, might need later
+    def onBackgroundTaskFinished(self):
+        print("Database update completed!")
+
 
     def initUI(self):
         self.setWindowTitle('Language Learning App')
