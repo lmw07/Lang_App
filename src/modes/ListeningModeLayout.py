@@ -101,6 +101,8 @@ class ListeningModeLayout(QWidget):
         self.translatedSentenceBox.setText(self.currSentence.english if not self.translatedSentenceBox.text() else "")
 
     def on_progress_button_clicked(self, knewIt):
+        self.originalSentenceBox.setText("")
+        self.translatedSentenceBox.setText("")
         self.getSentence()
         self.playSound()
  
