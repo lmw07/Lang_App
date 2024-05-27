@@ -10,3 +10,5 @@
 /__pycache__
 /db_and_sound_updater.py
 *.pyc
+/constants.py
+
