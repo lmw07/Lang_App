@@ -1,7 +1,7 @@
 import json
 
 class Sentence:
-    def __init__(self, norwegian, english, word_map):
+    def __init__(self, norwegian, english, word_map, id = None):
         """
         Initializes the Sentence object with Norwegian sentence, English translation,
         and a dictionary of word mappings from Norwegian to English.
@@ -9,7 +9,7 @@ class Sentence:
         self.norwegian = norwegian
         self.english = english
         self.word_map = word_map
-        self.id = None
+        self.id = id
 
     @classmethod
     def from_json(cls, json_str):
