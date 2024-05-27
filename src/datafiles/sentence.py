@@ -18,8 +18,12 @@ class Sentence:
         :param json_str: JSON string containing norwegian, english, and word_mapping.
         :return: Sentence object
         """
-        data = json.loads(json_str)
-        return cls(data['Norwegian_sentence'], data['English_translation'], data['Word_mapping'])
+        try:
+            data = json.loads(json_str)
+            return cls(data['Norwegian_sentence'], data['English_translation'], data['Word_mapping'])
+        except json.decoder.JSONDecodeError as e:
+            print(e.msg)
+            print(json_str)
 
     @classmethod
     def list_from_json(cls, json_str):
@@ -29,5 +33,9 @@ class Sentence:
         :param json_str: JSON string containing an array of Sentence data.
         :return: List of Sentence objects
         """
-        sentences = json.loads(json_str)
-        return [cls(s['Norwegian_sentence'], s['English_translation'], s['Word_mapping']) for s in sentences]
+        try:
+            sentences = json.loads(json_str)
+            return [cls(s['Norwegian_sentence'], s['English_translation'], s['Word_mapping']) for s in sentences]
+        except json.decoder.JSONDecodeError as e:
+            print(e.msg)
+            print(json_str)
