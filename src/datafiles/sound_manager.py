@@ -52,10 +52,6 @@ def __check_for_sound_in_folder__(id : int) -> bool:
             return True
     return False
    
-
-
-
-
 '''
 Checks for presence of sound file database. If not found,
 creates one.
@@ -69,22 +65,6 @@ def get_sound(id : int, sentenceText :str) -> bool:
         __synthesize_sound_with_google__(sentenceText, id)
         return pathToFile
 
-'''
-Gets sounds for all sentences in database that do not have a filepath associated with their sound field
-Returns the number of changes to the database
-'''
-def get_sounds_for_all_sentences() -> int:
-    import dbmanager
-    count = 0
-    soundsToAdd = dbmanager.getAllSentenceIds()
-    for id in soundsToAdd:
-        tup = dbmanager.getSentenceSound(id)
-        text = tup[0]
-        if tup[1] == "None":
-            filePath = get_sound(id, text)
-            dbmanager.updateSentenceSound(id, filePath)
-            count += 1
-            
-    return count
+
 
 

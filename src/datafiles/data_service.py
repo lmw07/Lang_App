@@ -1,5 +1,6 @@
 import dbmanager as dbmanager
 from sentence import Sentence
+import sound_manager
 
 def getSoundFile(sentenceId : int) -> str:
     return dbmanager.getSentenceSound(sentenceId)[1]
@@ -37,3 +38,20 @@ def getSentencesFromWords(wordList) :
     #generate the ones you dont have with API call
 
 
+
+'''
+Gets sounds for all sentences in database that do not have a filepath associated with their sound field
+Returns the number of changes to the database
+'''
+def get_sounds_for_all_sentences() -> int:
+    count = 0
+    soundsToAdd = dbmanager.getAllSentenceIds()
+    for id in soundsToAdd:
+        tup = dbmanager.getSentenceSound(id)
+        text = tup[0]
+        if tup[1] == "None":
+            filePath = sound_manager.get_sound(id, text)
+            dbmanager.updateSentenceSound(id, filePath)
+            count += 1
+            
+    return count
