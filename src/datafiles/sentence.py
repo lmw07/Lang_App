@@ -9,6 +9,7 @@ class Sentence:
         self.norwegian = norwegian
         self.english = english
         self.word_map = word_map
+        self.id = None
 
     @classmethod
     def from_json(cls, json_str):
