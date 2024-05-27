@@ -6,7 +6,7 @@ The database should have 2 tables: sentences and words
 '''
 import sqlite3
 import string
-from sentence import Sentence
+from datafiles.sentence import Sentence
 
 sentencePath = "database/sentences.db"
 
@@ -26,6 +26,7 @@ def add_sentences_from_file(filename : str):
     with open(filename) as file:
         senStringsArr = file.readlines()
         senStringsArr = [sentence.encode("latin1").decode("utf-8") for sentence in senStringsArr]
+        senStringsArr = [sentence.replace("Ã¥", "å").replace("Ã¦","æ" ).replace("Ã¸", "ø") for sentence in senStringsArr]
 
     conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
@@ -183,6 +184,11 @@ def updateSentenceClass(sentence_id : int, learned : bool):
     conn.close()
 
 
+'''
+Returns sentences that have no associated sound file
+'''
+def getIdsOf():
+    return 0
 
 '''
 Returns a tuple where the first element is the norwegian sentence and the second element is a filepath to a sound file
@@ -295,7 +301,7 @@ def __test():
 
 
 
-def fix_encoding(db_path, table_name, column_name):
+def fix_encodingInWholeDB(db_path, table_name, column_name):
     # Connect to the SQLite database
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()

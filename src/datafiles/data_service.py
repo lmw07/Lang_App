@@ -1,6 +1,6 @@
-import dbmanager as dbmanager
-from sentence import Sentence
-import sound_manager
+import datafiles.dbmanager as dbmanager
+from datafiles.sentence import Sentence
+import datafiles.sound_manager as sound_manager
 
 def getSoundFile(sentenceId : int) -> str:
     return dbmanager.getSentenceSound(sentenceId)[1]
@@ -43,6 +43,7 @@ def getSentencesFromWords(wordList) :
 Gets sounds for all sentences in database that do not have a filepath associated with their sound field
 Returns the number of changes to the database
 '''
+#TODO make more efficient by writing special method in dbmanager
 def get_sounds_for_all_sentences() -> int:
     count = 0
     soundsToAdd = dbmanager.getAllSentenceIds()
