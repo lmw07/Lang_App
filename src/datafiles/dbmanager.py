@@ -8,7 +8,7 @@ import sqlite3
 import string
 from datafiles.sentence import Sentence
 
-sentencePath = "database/sentences.db"
+dbPath = "database/sentences.db"
 
 
 
@@ -28,7 +28,7 @@ def add_sentences_from_file(filename : str):
         senStringsArr = [sentence.encode("latin1").decode("utf-8") for sentence in senStringsArr]
         senStringsArr = [sentence.replace("Ã¥", "å").replace("Ã¦","æ" ).replace("Ã¸", "ø") for sentence in senStringsArr]
 
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     
     for sentence in senStringsArr:
@@ -74,13 +74,70 @@ def cleanString(inString : str) -> str:
     return cleaned_string
 
 
+def addSentence(sentence : Sentence):
+    conn = sqlite3.connect(dbPath)
+    cursor = conn.cursor()
+    sentenceQuery = '''INSERT INTO sentences (norsk, english, old, soundfile) 
+    SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sentences WHERE norsk = ?);'''
+    cursor.execute(sentenceQuery,(sentence.norwegian, sentence.english, 0, "None", sentence.norwegian))
+    conn.commit()
+    if cursor.rowcount == 1:
 
+        # SQL query to get the most recently added primary key
+        query = "SELECT sentence_id FROM sentences ORDER BY sentence_id DESC LIMIT 1"
+
+        # Execute the query
+        cursor.execute(query)
+
+        # Fetch the result
+        sentence_id = cursor.fetchone()[0]
+        #add to words dictionary
+        for key in sentence.word_map:
+            query = '''INSERT INTO words (sentence_id, norsk, english) VALUES (?,?,?)'''
+            cleanedNorskWord = cleanString(key)
+            cleanedEngWord = cleanString(sentence.word_map[key])
+            cursor.execute(query, (sentence_id, cleanedNorskWord,cleanedEngWord))
+            conn.commit()
+
+
+
+def getSentencesFromWord(word :str) -> list:
+    conn = sqlite3.connect(dbPath)
+    cursor = conn.cursor()
+    query = "SELECT * FROM sentences WHERE norsk LIKE ?"
+    param = f"%{word}%"
+    cursor.execute(query, (param,))
+    
+    random_rows = cursor.fetchall()
+    
+    sentencesAndWordsList = []
+    for row in random_rows:
+ 
+        sentence_id = row[0]
+        query = '''SELECT * FROM words WHERE sentence_id = ?'''
+        cursor.execute(query, (sentence_id,))
+      
+        wordsList = cursor.fetchall()
+        wordDic = {}
+
+        for wordRow in wordsList:
+            wordDic.update({wordRow[2] : wordRow[3]})
+    
+        
+        
+        sentencesAndWordsList.append(tuple((row[1], row[2], wordDic, row[0])))
+        out = []
+        for tup in sentencesAndWordsList:
+            out.append(Sentence(tup[0], tup[1], tup[2], tup[3]))
+    cursor.close()
+    conn.close()
+    return out
 
 '''
 Creates the sentences and words tables
 '''
 def createTables():
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
 
     # Create table
@@ -117,7 +174,7 @@ def getRandomSentences(numberToGet : int, status = 'NEW') -> list:
     if status == "NEW":
         statusNum = 0
     # Connect to the SQLite database
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     rows_count = getSizeOfSentenceTable()
     if numberToGet >= 1 and numberToGet <= rows_count:
@@ -157,7 +214,7 @@ def getRandomSentences(numberToGet : int, status = 'NEW') -> list:
 
 def getSizeOfSentenceTable() -> int:
     # Connect to the SQLite database
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
 
     # Execute the query to count the rows
@@ -176,7 +233,7 @@ def updateSentenceClass(sentence_id : int, learned : bool):
         oldOrNew = 1
 
     # Connect to the SQLite database
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     cursor.execute('UPDATE sentences SET old = ? WHERE sentence_id = ?', (oldOrNew,sentence_id))
     conn.commit()
@@ -194,7 +251,7 @@ def getIdsOf():
 Returns a tuple where the first element is the norwegian sentence and the second element is a filepath to a sound file
 '''
 def getSentenceSound(sentence_id : int) -> str:
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM sentences WHERE sentence_id = ?', (sentence_id,))
     out = cursor.fetchall()
@@ -204,7 +261,7 @@ def getSentenceSound(sentence_id : int) -> str:
     return outTup
     
 def updateSentenceSound(sentence_id : int, soundfile: str):
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     cursor.execute('UPDATE sentences SET soundfile = ? WHERE sentence_id = ?', (soundfile,sentence_id))
     conn.commit()
@@ -215,7 +272,7 @@ def updateSentenceSound(sentence_id : int, soundfile: str):
 removes both tables completely
 '''
 def __clearTables():
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     cursor.execute('''DROP TABLE sentences''')
     cursor.execute('''DROP TABLE words''')
@@ -226,7 +283,7 @@ def __clearTables():
 
 def getAllSentenceIds():
 
-    conn = sqlite3.connect(sentencePath)
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     query = "SELECT sentence_id FROM sentences"
     
@@ -253,7 +310,7 @@ def deleteSentence(sentence_id : int = None, norskSentence :string = None):
     if not sentence_id and not norskSentence:
         raise Exception("Must provide either sentence id or Norwegian text")
     try:
-        conn = sqlite3.connect(sentencePath)
+        conn = sqlite3.connect(dbPath)
         cursor = conn.cursor()
         if not sentence_id:
             findSentenceIdCommand = "SELECT * FROM sentences WHERE norsk = ?"
@@ -281,7 +338,7 @@ prints contents of tables for testing
 def __test():
     conn = sqlite3.connect('database\sentences.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT * FROM sentences''')
+    cursor.execute('''SELECT * FROM words''')
     print(cursor.fetchall())
 
 
@@ -330,3 +387,4 @@ def fix_encodingInWholeDB(db_path, table_name, column_name):
 #fix_encoding(sentencePath, 'sentences', 'norsk')
 #__test()
 
+#addSentence(Sentence("Jeg heter Lane", "My name is Lane", {"Jeg" : "I", "heter" : "am called", "Lane" : "Lane"}))
