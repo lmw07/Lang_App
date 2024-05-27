@@ -6,16 +6,11 @@ The database should have 2 tables: sentences and words
 '''
 import sqlite3
 import string
-import json
+from sentence import Sentence
 
-sentencePath = "database\sentences.db"
+sentencePath = "database/sentences.db"
 
-class Sentence:
-    def __init__(self, inputString) -> None:
-        tmpdict = json.loads(inputString)
-        self.Norsk_sentence = tmpdict.get("Norwegian_sentence")
-        self.English_sentence = tmpdict.get("English_translation")
-        self.word_map : dict = tmpdict.get("Word_mapping")
+
 
 
 
@@ -40,8 +35,8 @@ def add_sentences_from_file(filename : str):
         sentenceObject = Sentence(sentence)
 
         #add the norwegian and english sentence into the sentences table
-        norskSentence = sentenceObject.Norsk_sentence
-        engSentence = sentenceObject.English_sentence
+        norskSentence = sentenceObject.norwegian
+        engSentence = sentenceObject.english
         sentenceQuery = '''INSERT INTO sentences (norsk, english, old, soundfile) SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM sentences WHERE norsk = ?);'''
         cursor.execute(sentenceQuery,(norskSentence, engSentence, 0, "None", norskSentence))
         conn.commit()
@@ -111,8 +106,7 @@ Gets a random list of sentences, including their english translation and their a
 
 PARAM: numberToGet: the number of sentences to fetch.
 PARAM: status: must be 'OLD' or 'NEW'. Indicates whether to return learned or new sentences
-RETURNS:
-String list of tuples in format :  norwegian sentence, english sentence, dict{norsk word 1 : english word 1, norsk word 2 : english word 2..., sentence_id
+RETURNS: list of sentences
 '''
 def getRandomSentences(numberToGet : int, status = 'NEW') -> list:
     if status != "OLD" and status != "NEW":
@@ -151,9 +145,12 @@ def getRandomSentences(numberToGet : int, status = 'NEW') -> list:
             
             
             sentencesAndWordsList.append(tuple((row[1], row[2], wordDic, row[0])))
+            out = []
+            for tup in sentencesAndWordsList:
+                out.append(Sentence(tup[0], tup[1], tup[2], tup[3]))
         cursor.close()
         conn.close()
-        return sentencesAndWordsList
+        return out
         #print(sentencesAndWordsList)
 
 
@@ -223,7 +220,7 @@ def __clearTables():
 
 def getAllSentenceIds():
 
-    conn = sqlite3.connect("sentences.db")
+    conn = sqlite3.connect(sentencePath)
     cursor = conn.cursor()
     query = "SELECT sentence_id FROM sentences"
     
