@@ -8,7 +8,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import datafiles.dbmanager as dbmanager
 from modes.ClickableLabel import ClickableLabel
 import datafiles.data_service as data_service
-
+from datafiles.sentence import Sentence
 
 class TargetedModeLayout(QWidget):
     def __init__(self):
@@ -25,9 +25,7 @@ class TargetedModeLayout(QWidget):
         #self.player = QMediaPlayer()
         
     def popAndGatherSentenceData(self):
-        sentenceTuple = self.sentenceQueue.popleft()
-        self.currNorskSentence, self.currEngSentence, self.dictionary, self.currSentenceID = sentenceTuple
-        
+        self.currSentence : Sentence= self.sentenceQueue.popleft()        
 
 
     def initUI(self):
@@ -78,7 +76,7 @@ class TargetedModeLayout(QWidget):
 
         # Not currently used, might be used in future if real time sound generation is added to this mode
     # def playSound(self, speed = 1.0):
-    #     soundFile = data_service.getSoundFile(self.currSentenceID)
+    #     soundFile = data_service.getSoundFile(self.currSentence.id)
         
     #     try:
     #         if not hasattr(self, 'player'):
@@ -120,7 +118,7 @@ class TargetedModeLayout(QWidget):
         self.sentenceLayout.addStretch()
 
         
-        for word, translation in self.dictionary.items():
+        for word, translation in self.currSentence.word_map.items():
             label = ClickableLabel(word, translation)
 
             label.clicked.connect(lambda word=word: self.updateQueueCandidates(word))
@@ -160,7 +158,7 @@ class TargetedModeLayout(QWidget):
         self.initLabels()
 
     def on_translate_button_clicked(self):
-        self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
+        self.translatedSentenceBox.setText(self.currSentence.english if not self.translatedSentenceBox.text() else "")
 
     def generateNewSentencesAndClearCandidates(self):
         if len(self.queueCandidates) == 0:

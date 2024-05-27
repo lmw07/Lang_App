@@ -8,7 +8,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import datafiles.dbmanager as dbmanager
 from modes.ClickableLabel import ClickableLabel
 import datafiles.data_service as data_service
-
+from datafiles.sentence import Sentence
 
 class ListeningModeLayout(QWidget):
     def __init__(self):
@@ -21,8 +21,7 @@ class ListeningModeLayout(QWidget):
         self.playSound()
 
     def getSentence(self):
-        self.sentenceTuple = data_service.getOneKnownSentenceFromDb()
-        self.currNorskSentence, self.currEngSentence, self.dictionary, self.currSentenceID = self.sentenceTuple
+        self.currSentence : Sentence = data_service.getOneKnownSentenceFromDb()
    
 
     def initUI(self):
@@ -61,15 +60,15 @@ class ListeningModeLayout(QWidget):
 
 
     def on_show_button_clicked(self):
-        if self.originalSentenceBox.text() == self.currNorskSentence:
+        if self.originalSentenceBox.text() == self.currSentence.norwegian:
             self.originalSentenceBox.setText("")
         else:
-            self.originalSentenceBox.setText(self.currNorskSentence)
+            self.originalSentenceBox.setText(self.currSentence.norwegian)
 
   
     def playSound(self, speed = 1.0):
-        soundFile = data_service.getSoundFile(self.currSentenceID)
-        #soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
+        soundFile = data_service.getSoundFile(self.currSentence.id)
+        #soundFile = 'speechfiles/' + str(self.currSentence.id ) + '.mp3'
         try:
             if not hasattr(self, 'player'):
                 self.player = QMediaPlayer()
@@ -99,7 +98,7 @@ class ListeningModeLayout(QWidget):
 
 
     def on_translate_button_clicked(self):
-        self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
+        self.translatedSentenceBox.setText(self.currSentence.english if not self.translatedSentenceBox.text() else "")
 
     def on_progress_button_clicked(self, knewIt):
         self.getSentence()

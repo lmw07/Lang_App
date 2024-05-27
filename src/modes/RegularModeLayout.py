@@ -8,6 +8,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import datafiles.dbmanager as dbmanager
 from modes.ClickableLabel import ClickableLabel
 import datafiles.data_service as data_service
+from datafiles.sentence import Sentence
 
 
 class RegularModeLayout(QWidget):
@@ -36,7 +37,7 @@ class RegularModeLayout(QWidget):
     def updateWorkingSet(self, size):
         self.workingSet = data_service.getMultipleRandomSentencesFromDb(size, self.fractionOld)
 
-    def getATupleFromWorkingSet(self):
+    def getASentenceFromWorkingSet(self):
         return random.choice(self.workingSet) if self.workingSet else None
 
     def initUI(self):
@@ -81,8 +82,8 @@ class RegularModeLayout(QWidget):
 
     #TODO fix so it follows abstraction rules
     def playSound(self, speed = 1.0):
-        soundFile = data_service.getSoundFile(self.currSentenceID)
-        #soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
+        soundFile = data_service.getSoundFile(self.currSentence.id)
+        #soundFile = 'speechfiles/' + str(self.currSentence.id ) + '.mp3'
         try:
             if not hasattr(self, 'player'):
                 self.player = QMediaPlayer()
@@ -103,10 +104,9 @@ class RegularModeLayout(QWidget):
         # Reapply stretch to ensure labels are centered
         self.sentenceLayout.addStretch()
 
-        sentenceTuple = self.getATupleFromWorkingSet()
-        if sentenceTuple:
-            self.currNorskSentence, self.currEngSentence, dictionary, self.currSentenceID = sentenceTuple
-            for word, translation in dictionary.items():
+        self.currSentence : Sentence = self.getASentenceFromWorkingSet()
+        if self.currSentence:
+            for word, translation in self.currSentence.word_map.items():
                 label = ClickableLabel(word, translation)
                 self.sentenceLayout.addWidget(label)
                 self.labels.append(label)
@@ -140,15 +140,15 @@ class RegularModeLayout(QWidget):
         self.initLabels()
 
     def on_translate_button_clicked(self):
-        self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
+        self.translatedSentenceBox.setText(self.currSentence.english if not self.translatedSentenceBox.text() else "")
 
     def on_progress_button_clicked(self, knewIt):
-        data_service.updateSentenceClass(self.currSentenceID, knewIt)
+        data_service.updateSentenceClass(self.currSentence.id, knewIt)
         if knewIt:
-            for tup in self.workingSet:
-                if self.currNorskSentence == tup[0]:
-                    tupeToRemove = tup
-            self.workingSet.remove(tupeToRemove)
+            for sentence in self.workingSet:
+                if self.currSentence.norwegian == sentence.norwegian:
+                    sentenceToRemove = sentence
+            self.workingSet.remove(sentenceToRemove)
             if not self.workingSet:
                 QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
                 self.on_change_set_button_clicked()
