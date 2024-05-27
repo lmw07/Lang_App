@@ -15,7 +15,7 @@ class RegularModeLayout(QWidget):
     def __init__(self):
         super().__init__()
         self.workingSet = []
-        self.fullWorkingSetSize = 8
+        self.fullWorkingSetSize = 20
         self.labels = []
         self.centralWidget = QWidget()
         #modify to change composition of working set
