@@ -7,6 +7,7 @@ The database should have 2 tables: sentences and words
 import sqlite3
 import string
 from datafiles.sentence import Sentence
+#from sentence import Sentence #uncomment if running this file by itself
 
 dbPath = "database/sentences.db"
 
@@ -338,7 +339,7 @@ prints contents of tables for testing
 def __test():
     conn = sqlite3.connect('database\sentences.db')
     cursor = conn.cursor()
-    cursor.execute('''SELECT * FROM words''')
+    cursor.execute('''SELECT * FROM sentences''')
     print(cursor.fetchall())
 
 
