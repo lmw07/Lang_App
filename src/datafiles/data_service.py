@@ -1,5 +1,5 @@
-import datafiles.dbmanager as dbmanager
-
+import dbmanager as dbmanager
+from sentence import Sentence
 
 def getSoundFile(sentenceId : int) -> str:
     return dbmanager.getSentenceSound(sentenceId)[1]
@@ -35,3 +35,5 @@ def getSentencesFromWords(wordList) :
     return dbmanager.getRandomSentences(len(wordList) * 5) #PLACEHOLDER
     #for all words in word list check database for 5 sentences that have that word
     #generate the ones you dont have with API call
+
+
