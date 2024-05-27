@@ -1,7 +1,7 @@
 
 from collections import deque
 import random
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QInputDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QInputDialog, QApplication
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QFont
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -9,6 +9,7 @@ import datafiles.dbmanager as dbmanager
 from modes.ClickableLabel import ClickableLabel
 import datafiles.data_service as data_service
 from datafiles.sentence import Sentence
+
 
 class TargetedModeLayout(QWidget):
     def __init__(self):
@@ -140,10 +141,10 @@ class TargetedModeLayout(QWidget):
         buttonLayout = QHBoxLayout()
         buttonLayout.addStretch()
 
-        learnedButton = QPushButton("Continue")
-        learnedButton.setStyleSheet("background-color: lightgreen;")
-        learnedButton.clicked.connect(lambda: self.on_continue_clicked())
-        buttonLayout.addWidget(learnedButton)
+        self.learnedButton = QPushButton("Continue")
+        self.learnedButton.setStyleSheet("background-color: lightgreen;")
+        self.learnedButton.clicked.connect(lambda: self.on_continue_clicked())
+        buttonLayout.addWidget(self.learnedButton)
 
         buttonLayout.addStretch()
         layout.addLayout(buttonLayout)
@@ -163,17 +164,38 @@ class TargetedModeLayout(QWidget):
     def generateNewSentencesAndClearCandidates(self):
         if len(self.queueCandidates) == 0:
             return
-        self.sentenceQueue = self.sentenceQueue + deque(data_service.getSentencesFromWords(self.queueCandidates))
+        
+        newSentences = data_service.getSentencesFromWords(self.queueCandidates)
+        if newSentences:
+            self.sentenceQueue = self.sentenceQueue + deque(newSentences)
         self.queueCandidates.clear()
         self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
         self.initQueueLayout()
+        
+    def disableContinue(self):
+        self.learnedButton.setDisabled(True)
+        self.learnedButton.setText("Loading")
+        self.learnedButton.setStyleSheet("background-color: red;")
+
+    def enableContinue(self):
+        self.learnedButton.setDisabled(False)
+        self.learnedButton.setText("Continue")
+        self.learnedButton.setStyleSheet("background-color: lightgreen;")
 
     def on_continue_clicked(self):
+
         if len(self.sentenceQueue) == 0 and len(self.queueCandidates) == 0:
             QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
             self.on_change_set_button_clicked()
         else:
+            self.disableContinue()
+
+            # Force the GUI to update
+            QApplication.processEvents()
             self.generateNewSentencesAndClearCandidates()
+
+            self.enableContinue()
+    
             self.popAndGatherSentenceData()
             self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
             self.initLabels()
