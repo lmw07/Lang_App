@@ -163,8 +163,11 @@ class TargetedModeLayout(QWidget):
 
     def generateNewSentencesAndClearCandidates(self):
         if len(self.queueCandidates) == 0:
+            #mark sentence as learned if queueCandidates is empty
+            data_service.updateSentenceClass(self.currSentence.id, True)
             return
-        
+        #mark sentence as unlearned if there are unknown words in it
+        data_service.updateSentenceClass(self.currSentence.id, False)
         newSentences = data_service.getSentencesFromWords(self.queueCandidates)
         if newSentences:
             self.sentenceQueue = self.sentenceQueue + deque(newSentences)
