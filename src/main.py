@@ -30,6 +30,7 @@ class DatabaseWorker(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setGeometry(100, 100, 800, 600)  # x, y, width, height
         self.initUI()
         self.startBackgroundTask()
 
@@ -47,14 +48,16 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('Language Learning App')
-        self.setGeometry(100, 100, 800, 600)  # x, y, width, height
+        
 
         # Set central widget and layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        self.main_layout = QHBoxLayout()
+        self.main_layout = QVBoxLayout()
         self.central_widget.setLayout(self.main_layout)
+        self.add_count_label()
         self.main_layout.addStretch()
+        
 
         # Create mode switch buttons
         self.mode1_button = QPushButton('Regular Mode', self)
@@ -74,13 +77,21 @@ class MainWindow(QMainWindow):
         self.main_layout.addStretch()
 
         # Menu Bar setup
+        
         menubar = self.menuBar()
+        menubar.clear()
         change_mode_menu = menubar.addMenu('Change Mode')
 
         # Add mode actions to menu
         self.add_mode_action(change_mode_menu, 'Regular Mode', RegularModeLayout)
         self.add_mode_action(change_mode_menu, 'Targeted Mode', TargetedModeLayout)
         self.add_mode_action(change_mode_menu, 'Listening Mode', ListeningModeLayout)
+
+        #Add main menu return to menubar
+        action = QAction("Main Menu", self)
+        action.triggered.connect(lambda: self.initUI())
+        change_mode_menu.addAction(action)
+       
 
     def add_mode_action(self, menu, mode_name, mode_class):
         action = QAction(mode_name, self)
@@ -93,10 +104,16 @@ class MainWindow(QMainWindow):
             child = self.main_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
-
+        
         # Load the new mode layout
         mode_layout = mode_class()
         self.main_layout.addWidget(mode_layout)
+    
+    def add_count_label(self):
+        count = data_service.getNumberOfKnownSentences()
+        self.countLabel = QLabel(f'Sentences learned: {count}')
+        self.main_layout.addWidget(self.countLabel, alignment=Qt.AlignCenter)
+
 
 # Application setup
 app = QApplication(sys.argv)
