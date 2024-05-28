@@ -19,7 +19,8 @@ dbPath = constants.DB_PATH
 '''
 adds sentences from a file. Each line of the file should be a JSON of a sentence object.
 Here is an example
-{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}
+{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter",
+ "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}
 
 '''
 def add_sentences_from_file(filename : str):
@@ -258,11 +259,7 @@ def updateSentenceClass(sentence_id : int, learned : bool):
     conn.close()
 
 
-'''
-Returns sentences that have no associated sound file
-'''
-def getIdsOf():
-    return 0
+
 
 '''
 Returns a tuple where the first element is the norwegian sentence and the second element is a filepath to a sound file
@@ -285,17 +282,6 @@ def updateSentenceSound(sentence_id : int, soundfile: str):
     cursor.close()
     conn.close()
 
-'''
-removes both tables completely
-'''
-def __clearTables():
-    conn = sqlite3.connect(dbPath)
-    cursor = conn.cursor()
-    cursor.execute('''DROP TABLE sentences''')
-    cursor.execute('''DROP TABLE words''')
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 
 def getAllSentenceIds():
@@ -352,30 +338,17 @@ def deleteSentence(sentence_id : int = None, norskSentence :string = None):
 '''
 prints contents of tables for testing
 '''
-def __test():
+def __print_table__(table):
     conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
-    cursor.execute('''SELECT * FROM sentences''')
+    cursor.execute(f'SELECT * FROM {table}')
     print(cursor.fetchall())
 
 
-
-#print(getSentenceSound(1))
-#createTables()
-#add_sentences_from_file("sentences_to_add.txt")
-
-#__clearTables()
-#print(getSentences(300))
-#print(getSizeOfSentenceTable())
-
-#s = Sentence('{"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter", "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}')
-
-#deleteSentence(196)
-
-
-
-
-def fix_encodingInWholeDB(db_path, table_name, column_name):
+'''
+Run this if some of the special characters in the sentences are corrupt
+'''
+def __fix_encodingInWholeDB__(db_path, table_name, column_name):
     # Connect to the SQLite database
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -400,8 +373,10 @@ def fix_encodingInWholeDB(db_path, table_name, column_name):
     conn.close()
     print("Database update complete.")
     
-
-def fixsound():
+'''
+Run this if the sound file paths are incorrect
+'''
+def __fixsound__():
      # Connect to the SQLite database
     conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
@@ -417,10 +392,3 @@ def fixsound():
     conn.close()
     print('done')
 
-
-# Example usage
-#fix_encoding(sentencePath, 'sentences', 'norsk')
-#fixsound()
-#__test()
-
-#addSentence(Sentence("Jeg heter Lane", "My name is Lane", {"Jeg" : "I", "heter" : "am called", "Lane" : "Lane"}))
