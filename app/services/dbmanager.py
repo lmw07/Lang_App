@@ -353,7 +353,7 @@ def deleteSentence(sentence_id : int = None, norskSentence :string = None):
 prints contents of tables for testing
 '''
 def __test():
-    conn = sqlite3.connect('database\sentences.db')
+    conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
     cursor.execute('''SELECT * FROM sentences''')
     print(cursor.fetchall())
@@ -399,9 +399,27 @@ def fix_encodingInWholeDB(db_path, table_name, column_name):
     conn.commit()
     conn.close()
     print("Database update complete.")
+    
+
+def fixsound():
+     # Connect to the SQLite database
+    conn = sqlite3.connect(dbPath)
+    cursor = conn.cursor()
+    
+    # Query to fetch all rows from the specified table and column
+    cursor.execute(f"SELECT rowid, soundfile FROM sentences")
+    rows = cursor.fetchall()
+    for row_id, text in rows:
+        if len(text) > 12:
+            correctedFile = text[12:]
+        cursor.execute(f"UPDATE sentences SET soundfile = ? WHERE rowid = ?", (correctedFile, row_id))
+    conn.commit()
+    conn.close()
+
 
 # Example usage
 #fix_encoding(sentencePath, 'sentences', 'norsk')
+#fixsound()
 #__test()
 
 #addSentence(Sentence("Jeg heter Lane", "My name is Lane", {"Jeg" : "I", "heter" : "am called", "Lane" : "Lane"}))
