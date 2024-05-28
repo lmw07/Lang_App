@@ -68,6 +68,8 @@ class ListeningModeLayout(QWidget):
   
     def playSound(self, speed = 1.0):
         soundFile = data_service.getSoundFile(self.currSentence.id)
+        if soundFile == None or soundFile == "None":
+            self.getSentence()
         #soundFile = 'speechfiles/' + str(self.currSentence.id ) + '.mp3'
         try:
             if not hasattr(self, 'player'):
