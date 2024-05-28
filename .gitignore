@@ -11,4 +11,9 @@
 /db_and_sound_updater.py
 *.pyc
 /constants.py
-
+/errata
+/new_sentence_text_files
+*.mp3
+app/constants.py
+resources/database/new_sentence_text_files/sentences_to_add.txt
+resources/database/new_sentence_text_files/current_sentences.txt

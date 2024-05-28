@@ -1,12 +1,12 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel, QHBoxLayout
 from PyQt5.QtCore import Qt
-from modes.RegularModeLayout import RegularModeLayout
-from modes.TargetedModeLayout import TargetedModeLayout
-from modes.ListeningModeLayout import ListeningModeLayout
+from app.gui.regular_mode_layout import RegularModeLayout
+from app.gui.targeted_mode_layout import TargetedModeLayout
+from app.gui.listening_mode_layout import ListeningModeLayout
 from PyQt5.QtCore import QThread, pyqtSignal
 
-import datafiles.data_service as data_service
+import app.services.data_service as data_service
 
 class DatabaseWorker(QThread):
     finished = pyqtSignal()  # Signal to indicate completion
@@ -120,8 +120,9 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.countLabel, alignment=Qt.AlignCenter)
 
 
-# Application setup
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec_())
+def run():
+    # Application setup
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())

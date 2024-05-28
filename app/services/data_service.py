@@ -1,7 +1,7 @@
-import datafiles.dbmanager as dbmanager
-from datafiles.sentence import Sentence
-import datafiles.sound_manager as sound_manager
-import datafiles.sentence_fetcher as sentence_fetcher
+import app.services.dbmanager as dbmanager
+from app.models.sentence import Sentence
+import app.services.sound_manager as sound_manager
+import app.services.sentence_generator as sentence_generator
 
 def getSoundFile(sentenceId : int) -> str:
     return dbmanager.getSentenceSound(sentenceId)[1]
@@ -51,7 +51,7 @@ def getSentencesFromWords(wordList : list, numberOfSentencesToGet = 5) -> list:
             out = out + sentences[:5]
     generatedSentences = None
     if len(wordsToGenerate) > 0:
-        generatedSentences = sentence_fetcher.getSentencesWithSpecificWords(wordsToGenerate, numberOfSentencesToGet)
+        generatedSentences = sentence_generator.getSentencesWithSpecificWords(wordsToGenerate, numberOfSentencesToGet)
         for sentence in generatedSentences:
             dbmanager.addSentence(sentence)
     if generatedSentences:

@@ -5,10 +5,10 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLay
 from PyQt5.QtCore import Qt, pyqtSignal, QUrl
 from PyQt5.QtGui import QFont
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-import datafiles.dbmanager as dbmanager
-from modes.ClickableLabel import ClickableLabel
-import datafiles.data_service as data_service
-from datafiles.sentence import Sentence
+import app.services.dbmanager as dbmanager
+from app.gui.clickable_label import ClickableLabel
+import app.services.data_service as data_service
+from app.models.sentence import Sentence
 
 class ListeningModeLayout(QWidget):
     def __init__(self):

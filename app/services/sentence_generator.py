@@ -1,6 +1,6 @@
 import google.generativeai as genai
-import constants
-from datafiles.sentence import Sentence
+import app.constants as constants
+from app.models.sentence import Sentence
 
 '''
 Gets one or more random sentences. Number to get must be between 1 and 10 if provided.

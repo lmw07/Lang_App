@@ -1,67 +1,31 @@
+
 import sys
 import random
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QMainWindow, QAction, QInputDialog
 from PyQt5.QtCore import Qt, pyqtSignal, QUrl
 from PyQt5.QtGui import QFont
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-import datafiles.dbmanager as dbmanager
-
-class ClickableLabel(QLabel):
-    clicked = pyqtSignal()
-
-    def __init__(self, word, translation):
-        super().__init__()
-        self.word = word
-        self.translation = translation
-        self.isTranslationShown = False
-        self.setText(word)
-        self.setAlignment(Qt.AlignCenter)
-        self.setMouseTracking(True)
-        self.setFontSize(14)
-
-    def mousePressEvent(self, event):
-        self.setText(self.translation if not self.isTranslationShown else self.word)
-        self.isTranslationShown = not self.isTranslationShown
-        self.clicked.emit()
-
-    def enterEvent(self, event):
-        self.setStyleSheet("QLabel { color : blue; }")
-
-    def leaveEvent(self, event):
-        self.setStyleSheet("QLabel { color : black; }")
-
-    def setFontSize(self, size):
-        font = self.font()
-        font.setPointSize(size)
-        self.setFont(font)
+import app.services.dbmanager as dbmanager
+from app.gui.clickable_label import ClickableLabel
+import app.services.data_service as data_service
+from app.models.sentence import Sentence
 
 
-
-class MainWindow(QMainWindow):
+class RegularModeLayout(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Language Learning App')
-        self.setGeometry(100, 100, 800, 600)
         self.workingSet = []
-        self.fullWorkingSetSize = 8
+        self.fullWorkingSetSize = 20
         self.labels = []
         self.centralWidget = QWidget()
-        self.setCentralWidget(self.centralWidget)  #DRY candidate
+        #modify to change composition of working set
+        self.fractionOld = 0.25
         self.updateWorkingSet(self.fullWorkingSetSize)
         self.initUI()
-        self.initMenuBar()
+        
         
         self.player = QMediaPlayer()
         
-
-
-    def initMenuBar(self):
-        menuBar = self.menuBar()
-        setConfigMenu = menuBar.addMenu("Adjust Set Configuration")
-
-        changeSetSizeAction = QAction("Change Set Size", self)
-        changeSetSizeAction.triggered.connect(self.onChangeSetSizeClicked)
-        setConfigMenu.addAction(changeSetSizeAction)
 
  
     def onChangeSetSizeClicked(self):
@@ -71,14 +35,13 @@ class MainWindow(QMainWindow):
             self.on_change_set_button_clicked()
 
     def updateWorkingSet(self, size):
-        self.workingSet = dbmanager.getSentences(size)
+        self.workingSet = data_service.getMultipleRandomSentencesFromDb(size, self.fractionOld)
 
-    def getATupleFromWorkingSet(self):
+    def getASentenceFromWorkingSet(self):
         return random.choice(self.workingSet) if self.workingSet else None
 
     def initUI(self):
-        self.centralWidget = QWidget()  # Create a central widget
-        self.setCentralWidget(self.centralWidget)  # Set it as the central widget of QMainWindow
+       # self.centralWidget = QWidget()  # Create a central widget #DRY candidate
         layout = QVBoxLayout()
         layout.addStretch()
 
@@ -110,16 +73,17 @@ class MainWindow(QMainWindow):
         playButton.clicked.connect(self.playSound)
         
         # Add the button to the layout
-        layout.addWidget(playButton)
+        layout.addWidget(playButton, alignment=Qt.AlignCenter)
 
 
         layout.addStretch()
-        self.centralWidget.setLayout(layout)
+        self.setLayout(layout)
 
 
     #TODO fix so it follows abstraction rules
     def playSound(self, speed = 1.0):
-        soundFile = 'speechfiles/' + str(self.currSentenceID ) + '.mp3'
+        soundFile = data_service.getSoundFile(self.currSentence.id)
+        #soundFile = 'speechfiles/' + str(self.currSentence.id ) + '.mp3'
         try:
             if not hasattr(self, 'player'):
                 self.player = QMediaPlayer()
@@ -128,10 +92,6 @@ class MainWindow(QMainWindow):
             self.player.play()
         except Exception as e:
             print("An error occurred:", e)
-
-
-
-
 
 
     def initLabels(self):
@@ -144,10 +104,9 @@ class MainWindow(QMainWindow):
         # Reapply stretch to ensure labels are centered
         self.sentenceLayout.addStretch()
 
-        sentenceTuple = self.getATupleFromWorkingSet()
-        if sentenceTuple:
-            self.currNorskSentence, self.currEngSentence, dictionary, self.currSentenceID = sentenceTuple
-            for word, translation in dictionary.items():
+        self.currSentence : Sentence = self.getASentenceFromWorkingSet()
+        if self.currSentence:
+            for word, translation in self.currSentence.word_map.items():
                 label = ClickableLabel(word, translation)
                 self.sentenceLayout.addWidget(label)
                 self.labels.append(label)
@@ -181,27 +140,18 @@ class MainWindow(QMainWindow):
         self.initLabels()
 
     def on_translate_button_clicked(self):
-        self.translatedSentenceBox.setText(self.currEngSentence if not self.translatedSentenceBox.text() else "")
+        self.translatedSentenceBox.setText(self.currSentence.english if not self.translatedSentenceBox.text() else "")
 
     def on_progress_button_clicked(self, knewIt):
-        dbmanager.updateSentenceClass(self.currSentenceID, knewIt)
+        data_service.updateSentenceClass(self.currSentence.id, knewIt)
         if knewIt:
-            for tup in self.workingSet:
-                if self.currNorskSentence == tup[0]:
-                    tupeToRemove = tup
-            self.workingSet.remove(tupeToRemove)
+            for sentence in self.workingSet:
+                if self.currSentence.norwegian == sentence.norwegian:
+                    sentenceToRemove = sentence
+            self.workingSet.remove(sentenceToRemove)
             if not self.workingSet:
                 QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
                 self.on_change_set_button_clicked()
         self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
         self.translatedSentenceBox.setText("")
         self.initLabels()
-
-def main():
-    app = QApplication(sys.argv)
-    mainWindow = MainWindow()
-    mainWindow.show()
-    sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main()

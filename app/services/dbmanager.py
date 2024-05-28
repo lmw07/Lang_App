@@ -6,10 +6,10 @@ The database should have 2 tables: sentences and words
 '''
 import sqlite3
 import string
-from datafiles.sentence import Sentence
-#from sentence import Sentence #uncomment if running this file by itself
+from app.models.sentence import Sentence
+import app.constants as constants
 
-dbPath = "database/sentences.db"
+dbPath = constants.DB_PATH
 
 
 
@@ -74,7 +74,9 @@ def cleanString(inString : str) -> str:
     cleaned_string = inString.translate(translation_table)
     return cleaned_string
 
-
+'''
+Adds a sentence from a sentence object
+'''
 def addSentence(sentence : Sentence):
     conn = sqlite3.connect(dbPath)
     cursor = conn.cursor()
