@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu, QAction, QVBoxLayout, QWidget, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QAction, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtCore import Qt
 from app.gui.regular_mode_layout import RegularModeLayout
 from app.gui.targeted_mode_layout import TargetedModeLayout
