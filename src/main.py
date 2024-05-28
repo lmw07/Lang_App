@@ -61,8 +61,13 @@ class MainWindow(QMainWindow):
 
         # Create mode switch buttons
         self.mode1_button = QPushButton('Regular Mode', self)
+        self.mode1_button.setStyleSheet("background-color: lightgreen;")
         self.mode2_button = QPushButton('Targeted Mode', self)
+        self.mode2_button.setStyleSheet("background-color: lightblue;")
         self.mode3_button = QPushButton('Listening Mode', self)
+        self.mode3_button.setStyleSheet("background-color: orangered;")
+        
+            
         
         # Connect buttons to the switch_mode method with the corresponding layout class
         self.mode1_button.clicked.connect(lambda: self.switch_mode(RegularModeLayout))
