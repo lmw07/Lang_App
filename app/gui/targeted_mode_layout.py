@@ -45,9 +45,9 @@ class TargetedModeLayout(QWidget):
         self.translatedSentenceBox.setFont(QFont('Arial', 12)) 
         layout.addWidget(self.translatedSentenceBox, alignment=Qt.AlignCenter)
 
-        translateButton = QPushButton("Translate")
-        translateButton.clicked.connect(self.on_translate_button_clicked)
-        layout.addWidget(translateButton, alignment=Qt.AlignCenter)
+        self.translateButton = QPushButton("Translate")
+        self.translateButton.clicked.connect(self.on_translate_button_clicked)
+        layout.addWidget(self.translateButton, alignment=Qt.AlignCenter)
 
         self.initProgressButtons(layout)
 
@@ -171,15 +171,19 @@ class TargetedModeLayout(QWidget):
         self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
         self.initQueueLayout()
         
-    def disableContinue(self):
+    def disableButtons(self):
         self.learnedButton.setDisabled(True)
         self.learnedButton.setText("Loading")
         self.learnedButton.setStyleSheet("background-color: red;")
 
-    def enableContinue(self):
+        self.translateButton.setDisabled(True)
+
+    def enableButtons(self):
         self.learnedButton.setDisabled(False)
         self.learnedButton.setText("Continue")
         self.learnedButton.setStyleSheet("background-color: lightgreen;")
+
+        self.translateButton.setDisabled(False)
 
     def on_continue_clicked(self):
         if len(self.queueCandidates) == 0:
@@ -193,13 +197,13 @@ class TargetedModeLayout(QWidget):
             QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
             self.on_change_set_button_clicked()
         else:
-            self.disableContinue()
+            self.disableButtons()
 
             # Force the GUI to update
             QApplication.processEvents()
             self.generateNewSentencesAndClearCandidates()
 
-            self.enableContinue()
+            self.enableButtons()
     
             self.popAndGatherSentenceData()
             self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
