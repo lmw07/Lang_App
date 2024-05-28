@@ -49,6 +49,7 @@ def getSentencesFromWords(wordList : list, numberOfSentencesToGet = 5) -> list:
             wordsToGenerate.append(word)
         else:
             out = out + sentences[:5]
+    generatedSentences = None
     if len(wordsToGenerate) > 0:
         generatedSentences = sentence_fetcher.getSentencesWithSpecificWords(wordsToGenerate, numberOfSentencesToGet)
         for sentence in generatedSentences:
