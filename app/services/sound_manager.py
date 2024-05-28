@@ -1,5 +1,5 @@
 
-
+from app.constants import SOUND_PATH
 
 '''
 Generates an mp3 of a Norwegian sentence with 1 of 4 randomly chosen voices.
@@ -35,7 +35,7 @@ def __synthesize_sound_with_google__(text, id : int):
     )
 
 
-    filename = "speechfiles/" + str(id) + ".mp3"
+    filename = SOUND_PATH + str(id) + ".mp3"
     # The response's audio_content is binary.
     with open(filename, "wb") as out:
         out.write(response.audio_content)
@@ -58,7 +58,7 @@ creates one.
 Returns path to file.
 '''
 def get_sound(id : int, sentenceText :str) -> bool:
-    pathToFile = "speechfiles/" + str(id) + ".mp3"
+    pathToFile = SOUND_PATH + str(id) + ".mp3"
     if __check_for_sound_in_folder__(id):
         return pathToFile
     else: 
