@@ -9,6 +9,7 @@ import app.services.dbmanager as dbmanager
 from app.gui.clickable_label import ClickableLabel
 import app.services.data_service as data_service
 from app.models.sentence import Sentence
+from app.constants import SENTENCES_TO_GET_PER_WORD
 
 
 class TargetedModeLayout(QWidget):
@@ -164,7 +165,7 @@ class TargetedModeLayout(QWidget):
     def generateNewSentencesAndClearCandidates(self):
         if len(self.queueCandidates) == 0:
             return
-        newSentences = data_service.getSentencesFromWords(self.queueCandidates)
+        newSentences = data_service.getSentencesFromWords(self.queueCandidates, SENTENCES_TO_GET_PER_WORD)
         if newSentences:
             self.sentenceQueue = self.sentenceQueue + deque(newSentences)
         self.queueCandidates.clear()
