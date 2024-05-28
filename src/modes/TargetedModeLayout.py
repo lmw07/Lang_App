@@ -163,11 +163,7 @@ class TargetedModeLayout(QWidget):
 
     def generateNewSentencesAndClearCandidates(self):
         if len(self.queueCandidates) == 0:
-            #mark sentence as learned if queueCandidates is empty
-            data_service.updateSentenceClass(self.currSentence.id, True)
             return
-        #mark sentence as unlearned if there are unknown words in it
-        data_service.updateSentenceClass(self.currSentence.id, False)
         newSentences = data_service.getSentencesFromWords(self.queueCandidates)
         if newSentences:
             self.sentenceQueue = self.sentenceQueue + deque(newSentences)
@@ -186,6 +182,12 @@ class TargetedModeLayout(QWidget):
         self.learnedButton.setStyleSheet("background-color: lightgreen;")
 
     def on_continue_clicked(self):
+        if len(self.queueCandidates) == 0:
+            #mark sentence as learned if queueCandidates is empty
+            data_service.updateSentenceClass(self.currSentence.id, True)
+        else:
+            #mark sentence as unlearned if there are unknown words in it
+            data_service.updateSentenceClass(self.currSentence.id, False)
 
         if len(self.sentenceQueue) == 0 and len(self.queueCandidates) == 0:
             QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
