@@ -35,7 +35,7 @@ def __synthesize_sound_with_google__(text, id : int):
     )
 
 
-    filename = SOUND_PATH + str(id) + ".mp3"
+    filename = SOUND_PATH + "\\" + str(id) + ".mp3"
     # The response's audio_content is binary.
     with open(filename, "wb") as out:
         out.write(response.audio_content)
@@ -47,7 +47,7 @@ def __check_for_sound_in_folder__(id : int) -> bool:
  
     import os
     filename = str(id) + ".mp3"
-    for root, dirs, files in os.walk("speechfiles"):
+    for root, dirs, files in os.walk(SOUND_PATH):
         if filename in files:
             return True
     return False

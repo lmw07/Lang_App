@@ -410,11 +410,12 @@ def fixsound():
     cursor.execute(f"SELECT rowid, soundfile FROM sentences")
     rows = cursor.fetchall()
     for row_id, text in rows:
-        if len(text) > 12:
-            correctedFile = text[12:]
-        cursor.execute(f"UPDATE sentences SET soundfile = ? WHERE rowid = ?", (correctedFile, row_id))
+        if len(text) <5:
+            #correctedFile = text[12:]
+            cursor.execute(f"UPDATE sentences SET soundfile = ? WHERE rowid = ?", (str(row_id) + ".mp3", row_id))
     conn.commit()
     conn.close()
+    print('done')
 
 
 # Example usage

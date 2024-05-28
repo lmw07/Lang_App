@@ -81,8 +81,8 @@ def get_sounds_for_all_sentences() -> int:
         tup = dbmanager.getSentenceSound(id)
         text = tup[0]
         if tup[1] == "None":
-            filePath = sound_manager.get_sound(id, text)
-            dbmanager.updateSentenceSound(id, filePath)
+            sound_manager.get_sound(id, text)
+            dbmanager.updateSentenceSound(id, str(id) + '.mp3')
             count += 1
             
     return count
