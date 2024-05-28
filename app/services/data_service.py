@@ -47,9 +47,6 @@ def updateSentenceClass(sentenceId :int, learned : bool):
 
 
 def getSentencesFromWords(wordList : list, numberOfSentencesToGet = 5) -> list:
-    #return dbmanager.getRandomSentences(len(wordList) * 5) #PLACEHOLDER
-    #for all words in word list check database for 5 sentences that have that word
-    #generate the ones you dont have with API call
     out = []
     wordsToGenerate = []
     for word in wordList:
