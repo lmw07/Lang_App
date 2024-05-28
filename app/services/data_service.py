@@ -2,9 +2,18 @@ import app.services.dbmanager as dbmanager
 from app.models.sentence import Sentence
 import app.services.sound_manager as sound_manager
 import app.services.sentence_generator as sentence_generator
+import os
+from app.constants import SOUND_PATH
 
 def getSoundFile(sentenceId : int) -> str:
-    return dbmanager.getSentenceSound(sentenceId)[1]
+    filename = dbmanager.getSentenceSound(sentenceId)[1]
+    # Construct the full path safely using os.path.join
+    full_path = os.path.join(SOUND_PATH, filename)
+    
+    # Normalize the path to correct any forward/backward slash issues
+    normalized_path = os.path.normpath(full_path)
+    
+    return normalized_path
 
 def getMultipleRandomSentencesFromDb(numberToGet : int, oldFraction = 0) ->list:
     if oldFraction > 1 or oldFraction < 0:
