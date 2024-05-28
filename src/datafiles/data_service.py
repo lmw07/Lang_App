@@ -19,6 +19,9 @@ def getMultipleRandomSentencesFromDb(numberToGet : int, oldFraction = 0) ->list:
         return outNew
     if outOld and not outNew:
         return outOld
+    
+def getNumberOfKnownSentences():
+    return dbmanager.getCountKnownSentences()
 
 def getOneRandomSentenceFromDb():
     out = dbmanager.getRandomSentences(1)

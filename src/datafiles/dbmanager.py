@@ -100,6 +100,20 @@ def addSentence(sentence : Sentence):
             cursor.execute(query, (sentence_id, cleanedNorskWord,cleanedEngWord))
             conn.commit()
 
+'''
+Gets the number of known sentences
+'''
+def getCountKnownSentences():
+    # Connect to the SQLite database
+    conn = sqlite3.connect(dbPath)
+    cursor = conn.cursor()
+
+    # Execute the query to count the rows
+    cursor.execute("SELECT COUNT(*) FROM sentences WHERE old = 1")
+
+    # Fetch the result
+    rows_count = cursor.fetchone()[0]
+    return rows_count
 
 
 def getSentencesFromWord(word :str) -> list:
