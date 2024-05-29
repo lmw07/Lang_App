@@ -1,5 +1,5 @@
 
-
+from app.constants import SOUND_PATH
 
 '''
 Generates an mp3 of a Norwegian sentence with 1 of 4 randomly chosen voices.
@@ -35,7 +35,7 @@ def __synthesize_sound_with_google__(text, id : int):
     )
 
 
-    filename = "speechfiles/" + str(id) + ".mp3"
+    filename = SOUND_PATH + "\\" + str(id) + ".mp3"
     # The response's audio_content is binary.
     with open(filename, "wb") as out:
         out.write(response.audio_content)
@@ -47,44 +47,24 @@ def __check_for_sound_in_folder__(id : int) -> bool:
  
     import os
     filename = str(id) + ".mp3"
-    for root, dirs, files in os.walk("speechfiles"):
+    for root, dirs, files in os.walk(SOUND_PATH):
         if filename in files:
             return True
     return False
    
-
-
-
-
 '''
 Checks for presence of sound file database. If not found,
 creates one.
 Returns path to file.
 '''
 def get_sound(id : int, sentenceText :str) -> bool:
-    pathToFile = "speechfiles/" + str(id) + ".mp3"
+    pathToFile = SOUND_PATH + str(id) + ".mp3"
     if __check_for_sound_in_folder__(id):
         return pathToFile
     else: 
         __synthesize_sound_with_google__(sentenceText, id)
         return pathToFile
 
-'''
-Gets sounds for all sentences in database that do not have a filepath associated with their sound field
-Returns the number of changes to the database
-'''
-def get_sounds_for_all_sentences() -> int:
-    import dbmanager
-    count = 0
-    soundsToAdd = dbmanager.getAllSentenceIds()
-    for id in soundsToAdd:
-        tup = dbmanager.getSentenceSound(id)
-        text = tup[0]
-        if tup[1] == "None":
-            filePath = get_sound(id, text)
-            dbmanager.updateSentenceSound(id, filePath)
-            count += 1
-            
-    return count
+
 
 
