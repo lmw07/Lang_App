@@ -17,3 +17,4 @@
 app/constants.py
 resources/database/new_sentence_text_files/sentences_to_add.txt
 resources/database/new_sentence_text_files/current_sentences.txt
+/.vscode
