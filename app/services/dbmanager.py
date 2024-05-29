@@ -5,6 +5,7 @@ This file contains methods to access and modify the database where the sentences
 The database should have 2 tables: sentences and words
 '''
 import sqlite3
+import random
 import string
 from app.models.sentence import Sentence
 import app.constants as constants
@@ -185,7 +186,10 @@ PARAM: numberToGet: the number of sentences to fetch.
 PARAM: status: must be 'OLD' or 'NEW'. Indicates whether to return learned or new sentences
 RETURNS: list of sentences
 '''
-def getRandomSentences(numberToGet : int, status = 'NEW') -> list:
+def getRandomSentences(numberToGet : int, status = None) -> list:
+    if status == None:
+        status = random.choice(["NEW", "OLD"])
+
     if status != "OLD" and status != "NEW":
         raise ValueError("Invalid status. Must be OLD or NEW")
     
