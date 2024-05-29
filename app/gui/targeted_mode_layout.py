@@ -111,13 +111,14 @@ class TargetedModeLayout(QWidget):
     #     except Exception as e:
     #         print("An error occurred:", e)
 
-
-
-    def initQueueLayout(self):
+    def clearQueuedCandidatesFromView(self):
         while self.queuedCandidatesLayout.count():
             layoutItem = self.queuedCandidatesLayout.takeAt(0)
             if layoutItem.widget():
                 layoutItem.widget().deleteLater()
+
+    def initQueueLayout(self):
+        self.clearQueuedCandidatesFromView()
         # Reapply stretch to ensure labels are centered
         self.queuedCandidatesLayout.addStretch()
         if len(self.queueCandidates) == 0:
@@ -209,6 +210,8 @@ class TargetedModeLayout(QWidget):
         self.translateButton.setDisabled(False)
 
     def on_continue_clicked(self):
+        self.translatedSentenceBox.setText("")
+        self.clearQueuedCandidatesFromView()
         if len(self.queueCandidates) == 0:
             #mark sentence as learned if queueCandidates is empty
             data_service.updateSentenceClass(self.currSentence.id, True)
@@ -227,6 +230,7 @@ class TargetedModeLayout(QWidget):
             worker = DatabaseWorker(lambda: self.generateNewSentencesAndClearCandidates(queue))
             worker.finished.connect(self.thread_finished)
             self.runningThreads.append(worker)
+            
             worker.start()
             if len(self.sentenceQueue) == 0:
                 self.sentenceQueue.append(data_service.getOneRandomSentenceFromDb())
