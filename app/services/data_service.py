@@ -78,6 +78,7 @@ def get_sounds_for_all_sentences() -> int:
         tup = dbmanager.getSentenceSound(id)
         text = tup[0]
         if tup[1] == "None":
+            print("1 sound retrieved")
             sound_manager.get_sound(id, text)
             dbmanager.updateSentenceSound(id, str(id) + '.mp3')
             count += 1
