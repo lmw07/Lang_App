@@ -16,14 +16,15 @@ dbPath = constants.DB_PATH
 
 
 
-'''
+
+def add_sentences_from_file(filename : str):
+    '''
 adds sentences from a file. Each line of the file should be a JSON of a sentence object.
 Here is an example
 {"Norwegian_sentence": "Jeg liker å lese bøker om vinteren", "English_translation": "I like to read books in the winter",
  "Word_mapping": {"Jeg": "I", "liker": "like", "å": "to", "lese": "read", "bøker": "books", "om": "in", "vinteren": "the winter"}}
 
 '''
-def add_sentences_from_file(filename : str):
 
     with open(filename) as file:
         senStringsArr = file.readlines()
