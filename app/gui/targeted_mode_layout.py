@@ -2,14 +2,35 @@
 from collections import deque
 import random
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QInputDialog, QApplication
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import Qt, QUrl, QThread, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import app.services.dbmanager as dbmanager
 from app.gui.clickable_label import ClickableLabel
 import app.services.data_service as data_service
+import copy
 from app.models.sentence import Sentence
 from app.constants import SENTENCES_TO_GET_PER_WORD
+
+
+class DatabaseWorker(QThread):
+    finished = pyqtSignal()  # Signal to indicate completion
+
+    def __init__(self, db_function, *args, **kwargs):
+        super().__init__()
+        self.db_function = db_function
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        # Call the existing database operation function with provided arguments
+        try:
+            self.db_function(*self.args, **self.kwargs)
+        except Exception as e:
+            print(f"Error during database operation: {e}")
+        finally:
+            self.finished.emit()  # Emit the finished signal when done
+
 
 
 class TargetedModeLayout(QWidget):
@@ -17,6 +38,7 @@ class TargetedModeLayout(QWidget):
         super().__init__()
         self.workingSet = []
         self.labels = []
+        self.runningThreads = []
         self.centralWidget = QWidget()
         self.sentenceTuple = data_service.getOneRandomSentenceFromDb()
         self.sentenceQueue = deque([self.sentenceTuple])
@@ -35,8 +57,8 @@ class TargetedModeLayout(QWidget):
         layout = QVBoxLayout()
         layout.addStretch()
 
-        self.counterBox = QLabel(f"Sentences left in set: {len(self.sentenceQueue)}")
-        layout.addWidget(self.counterBox, alignment=Qt.AlignCenter)
+        #self.counterBox = QLabel(f"Sentences left in set: {len(self.sentenceQueue)}")
+        #layout.addWidget(self.counterBox, alignment=Qt.AlignCenter)
 
         self.sentenceLayout = QHBoxLayout()
         self.initLabels()
@@ -155,22 +177,22 @@ class TargetedModeLayout(QWidget):
         sentenceTuple = data_service.getOneRandomSentenceFromDb()
         self.sentenceQueue = deque([sentenceTuple])
         self.popAndGatherSentenceData()
-        self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
+        #self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
         self.translatedSentenceBox.setText("")
         self.initLabels()
 
     def on_translate_button_clicked(self):
         self.translatedSentenceBox.setText(self.currSentence.english if not self.translatedSentenceBox.text() else "")
 
-    def generateNewSentencesAndClearCandidates(self):
-        if len(self.queueCandidates) == 0:
+    def generateNewSentencesAndClearCandidates(self, queue):
+        if len(queue) == 0:
             return
-        newSentences = data_service.getSentencesFromWords(self.queueCandidates, SENTENCES_TO_GET_PER_WORD)
+        newSentences = data_service.getSentencesFromWords(queue, SENTENCES_TO_GET_PER_WORD)
         if newSentences:
             self.sentenceQueue = self.sentenceQueue + deque(newSentences)
-        self.queueCandidates.clear()
-        self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
-        self.initQueueLayout()
+        
+        #self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
+        #self.initQueueLayout()
         
     def disableButtons(self):
         self.learnedButton.setDisabled(True)
@@ -198,19 +220,40 @@ class TargetedModeLayout(QWidget):
             QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
             self.on_change_set_button_clicked()
         else:
-            self.disableButtons()
 
-            # Force the GUI to update
-            QApplication.processEvents()
-            self.generateNewSentencesAndClearCandidates()
+            queue = copy.copy(self.queueCandidates)
+            self.queueCandidates.clear()
+           #fill sentenceQueue with random sentences while worker runs
+            worker = DatabaseWorker(lambda: self.generateNewSentencesAndClearCandidates(queue))
+            worker.finished.connect(self.thread_finished)
+            self.runningThreads.append(worker)
+            worker.start()
+            if len(self.sentenceQueue) == 0:
+                self.sentenceQueue.append(data_service.getOneRandomSentenceFromDb())
 
-            self.enableButtons()
+            #make clearcandidates take in copy of candidate queue
+            #call clearcandidates async
+            #if sentenceQueue empty then gen randoms
+
+            # self.disableButtons()
+
+            # # Force the GUI to update
+            # QApplication.processEvents()
+            # self.generateNewSentencesAndClearCandidates()
+
+            # self.enableButtons()
     
             self.popAndGatherSentenceData()
-            self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
+            #self.counterBox.setText(f"Sentences left in set: {len(self.sentenceQueue)}")
             self.initLabels()
             
-
+    def thread_finished(self):
+        print(f'Thread finished. {len(self.runningThreads) - 1} remain.')
+        # Find the thread that sent the signal and remove it from the list
+        sender = self.sender()
+        if sender in self.runningThreads:
+            self.runningThreads.remove(sender)
+        sender.deleteLater()  # Proper cleanup
         
         #self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
         #self.translatedSentenceBox.setText("")
