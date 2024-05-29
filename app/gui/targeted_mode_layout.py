@@ -217,7 +217,7 @@ class TargetedModeLayout(QWidget):
             data_service.updateSentenceClass(self.currSentence.id, False)
 
         if len(self.sentenceQueue) == 0 and len(self.queueCandidates) == 0:
-            QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
+            #QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
             self.on_change_set_button_clicked()
         else:
 
