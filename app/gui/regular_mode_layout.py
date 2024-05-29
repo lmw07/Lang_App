@@ -123,6 +123,7 @@ class RegularModeLayout(QWidget):
         data_service.updateSentenceClass(self.currSentence.id, knewIt)
         if knewIt:
             self.workingSet.remove(self.currSentence)
+            self.counterBox.setText(f"Sentences left in set: {len(self.workingSet)}")
         if not self.workingSet:
             QMessageBox.information(self, "End of Set Reached", "Great Job! You finished this set!")
             self.on_change_set_button_clicked()
